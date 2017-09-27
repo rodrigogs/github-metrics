@@ -1,1 +1,1 @@
-web: node ./fork
+web: node ./bin/fork
