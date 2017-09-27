@@ -1,10 +1,10 @@
-# fastify-scaffold
+# github-metrics
 
-[![Build Status](https://travis-ci.org/rodrigogs/fastify-scaffold.svg?branch=master)](https://travis-ci.org/rodrigogs/fastify-scaffold)
-[![Code Climate](https://codeclimate.com/github/rodrigogs/fastify-scaffold/badges/gpa.svg)](https://codeclimate.com/github/rodrigogs/fastify-scaffold)
-[![Test Coverage](https://codeclimate.com/github/rodrigogs/fastify-scaffold/badges/coverage.svg)](https://codeclimate.com/github/rodrigogs/fastify-scaffold/coverage)
-[![Dependency Status](https://david-dm.org/rodrigogs/fastify-scaffold/status.svg)](https://david-dm.org/rodrigogs/fastify-scaffold#info=dependencies)
-[![devDependency Status](https://david-dm.org/rodrigogs/fastify-scaffold/dev-status.svg)](https://david-dm.org/rodrigogs/fastify-scaffold#info=devDependencies)
+[![Build Status](https://travis-ci.org/rodrigogs/github-metrics.svg?branch=master)](https://travis-ci.org/rodrigogs/github-metrics)
+[![Code Climate](https://codeclimate.com/github/rodrigogs/github-metrics/badges/gpa.svg)](https://codeclimate.com/github/rodrigogs/github-metrics)
+[![Test Coverage](https://codeclimate.com/github/rodrigogs/github-metrics/badges/coverage.svg)](https://codeclimate.com/github/rodrigogs/github-metrics/coverage)
+[![Dependency Status](https://david-dm.org/rodrigogs/github-metrics/status.svg)](https://david-dm.org/rodrigogs/github-metrics#info=dependencies)
+[![devDependency Status](https://david-dm.org/rodrigogs/github-metrics/dev-status.svg)](https://david-dm.org/rodrigogs/github-metrics#info=devDependencies)
 
 A structured [fastify](http://www.fastify.io/) app example.
 
@@ -12,7 +12,7 @@ A structured [fastify](http://www.fastify.io/) app example.
 
 > Node.js **7.6.0** or higer is required
 
-> Download or clone fastify-scaffold latest release at https://github.com/rodrigogs/fastify-scaffold/releases
+> Download or clone github-metrics latest release at https://github.com/rodrigogs/github-metrics/releases
 
 > ```$ yarn install```
 
@@ -31,4 +31,4 @@ A structured [fastify](http://www.fastify.io/) app example.
 
 License
 -------
-[Licence](https://github.com/rodrigogs/fastify-scaffold/blob/master/LICENSE) © Rodrigo Gomes da Silva
+[Licence](https://github.com/rodrigogs/github-metrics/blob/master/LICENSE) © Rodrigo Gomes da Silva

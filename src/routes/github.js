@@ -1,25 +1,25 @@
-const debug = require('debug')('fastify-scaffold:routes:healthcheck');
+const debug = require('debug')('fastify-scaffold:routes:github');
 
 debug('configuring routes');
 
-const HealthcheckController = require('../controllers/healthcheck');
+const GithubController = require('../controllers/github');
 
 module.exports = [
   {
-    method: 'GET',
+    method: 'POST',
     url: '/',
     schema: {
       response: {
         200: {
           type: 'object',
           properties: {
-            status: {
+            message: {
               type: 'string',
             },
           },
         },
       },
     },
-    handler: HealthcheckController.index,
+    handler: GithubController.index,
   },
 ];
