@@ -1,0 +1,22 @@
+version: '3'
+
+services:
+  cenv-registry:
+    depends_on:
+      - mongo
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    command: node bin/www
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      MONGO_DB: mongodb://mongo:27017/github-metrics
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/usr/src/app
+
+  mongo:
+    image: mongo:3.4
+    command: mongod
