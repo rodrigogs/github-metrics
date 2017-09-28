@@ -6,7 +6,7 @@
 [![Dependency Status](https://david-dm.org/rodrigogs/github-metrics/status.svg)](https://david-dm.org/rodrigogs/github-metrics#info=dependencies)
 [![devDependency Status](https://david-dm.org/rodrigogs/github-metrics/dev-status.svg)](https://david-dm.org/rodrigogs/github-metrics#info=devDependencies)
 
-A structured [fastify](http://www.fastify.io/) app example.
+Track github project events from webhooks.
 
 #### Setup
 
