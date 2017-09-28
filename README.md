@@ -1,4 +1,4 @@
-# github-metrics
+# github-metrics (WORK IN PROGRESS)
 
 [![Build Status](https://travis-ci.org/rodrigogs/github-metrics.svg?branch=master)](https://travis-ci.org/rodrigogs/github-metrics)
 [![Code Climate](https://codeclimate.com/github/rodrigogs/github-metrics/badges/gpa.svg)](https://codeclimate.com/github/rodrigogs/github-metrics)

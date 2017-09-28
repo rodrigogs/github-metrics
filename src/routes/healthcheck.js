@@ -1,4 +1,4 @@
-const debug = require('debug')('fastify-scaffold:routes:healthcheck');
+const debug = require('debug')('github-metrics:routes:healthcheck');
 
 debug('configuring routes');
 

@@ -1,13 +1,13 @@
-const debug = require('debug')('fastify-scaffold:routes:github');
+const debug = require('debug')('github-metrics:routes:feed');
 
 debug('configuring routes');
 
-const GithubController = require('../controllers/github');
+const FeedController = require('../../controllers/v1/feed');
 
 module.exports = [
   {
     method: 'POST',
-    url: '/',
+    url: '/github',
     schema: {
       response: {
         200: {
@@ -20,6 +20,6 @@ module.exports = [
         },
       },
     },
-    handler: GithubController.index,
+    handler: FeedController.github,
   },
 ];

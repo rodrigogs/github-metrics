@@ -1,17 +1,26 @@
-const debug = require('debug')('fastify-scaffold:app');
+const debug = require('debug')('github-metrics:app');
 const fastify = require('fastify');
-const router = require('fastify-router');
 const helmet = require('fastify-helmet');
+const router = require('fastify-router');
 const formBody = require('fastify-formbody');
 
 debug('bootstrapping application');
 
+const config = require('./config');
 const Env = require('./config/env');
-
 const routes = require('./routes');
 
-module.exports = port => new Promise((resolve, reject) => {
-  const app = fastify();
+/**
+ * @param {Number} [port]
+ * @return {Promise.<*>} fastify instance
+ */
+module.exports = (port) => {
+  const app = fastify({
+    logger: {
+      level: 'fatal',
+      stream: config.logger.stream,
+    },
+  });
 
   port = port || Env.PORT || 3000;
 
@@ -19,13 +28,18 @@ module.exports = port => new Promise((resolve, reject) => {
   app.register(formBody);
 
   app.register(router, {}, (err) => {
-    if (err) return reject(err);
+    if (err) throw err;
     app.Router.route(routes);
   });
 
-  app.listen(port, (err) => {
-    /* istanbul ignore next */
-    if (err) return reject(err);
-    resolve(app);
+  const listen = () => new Promise((resolve, reject) => {
+    app.listen(port, (err) => {
+      /* istanbul ignore next */
+      if (err) return reject(err);
+      resolve(app);
+    });
   });
-});
+
+  return config.mongoose
+    .then(listen);
+};

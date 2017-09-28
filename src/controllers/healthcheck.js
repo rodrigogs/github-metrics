@@ -1,4 +1,4 @@
-const debug = require('debug')('fastify-scaffold:controllers:healthcheck');
+const debug = require('debug')('github-metrics:controllers:healthcheck');
 
 const HealthcheckController = {
 
