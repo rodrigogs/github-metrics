@@ -64,6 +64,38 @@ class Env {
   static set RECONNECTION_INTERVAL(value) {
     process.env.RECONNECTION_INTERVAL = value;
   }
+
+  /**
+   * @return {string}
+   * @constructor
+   */
+  static get REQUEST_LOG_LEVEL() {
+    return process.env.REQUEST_LOG_LEVEL || 'info';
+  }
+
+  /**
+   * @param {string} value
+   * @constructor
+   */
+  static set REQUEST_LOG_LEVEL(value) {
+    process.env.REQUEST_LOG_LEVEL = value;
+  }
+
+  /**
+   * @return {string}
+   * @constructor
+   */
+  static get GITHUB_TOKEN() {
+    return process.env.GITHUB_TOKEN;
+  }
+
+  /**
+   * @param {string} value
+   * @constructor
+   */
+  static set GITHUB_TOKEN(value) {
+    process.env.GITHUB_TOKEN = value;
+  }
 }
 
 module.exports = Env;

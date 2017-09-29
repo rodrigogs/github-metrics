@@ -6,7 +6,7 @@ const FeedController = {
 
   /**
    * @api {post} /github Github webhook
-   * @apiVersion 1.0.0
+   * @apiVersion 1
    * @apiName Github
    * @apiGroup Webhook
    * @apiPermission any

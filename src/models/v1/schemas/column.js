@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 const DateHelper = require('../../../helpers/date');
+const ProjectSchema = require('./project');
 
 const ColumnSchema = new Schema({
   id: Number,
@@ -10,6 +11,7 @@ const ColumnSchema = new Schema({
   url: String,
   project_url: String,
   cards_url: String,
+  project: ProjectSchema,
   deleted: Boolean,
   created_at: {
     type: Date,

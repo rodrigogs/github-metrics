@@ -4,6 +4,8 @@ const { Schema } = mongoose;
 
 const DateHelper = require('../../../helpers/date');
 const UserSchema = require('./user');
+const IssueSchema = require('./issue');
+const ColumnSchema = require('./column');
 
 const CardSchema = new Schema({
   url: String,
@@ -12,6 +14,8 @@ const CardSchema = new Schema({
   id: Number,
   note: String,
   creator: UserSchema,
+  issue: IssueSchema,
+  column: ColumnSchema,
   deleted: Boolean,
   created_at: {
     type: Date,

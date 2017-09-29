@@ -4,7 +4,7 @@ const HealthcheckController = {
 
   /**
    * @api {get} / Healthcheck
-   * @apiVersion 1.0.0
+   * @apiVersion 1
    * @apiName Healthcheck
    * @apiGroup Status
    * @apiPermission any

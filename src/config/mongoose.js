@@ -5,13 +5,13 @@ const Env = require('./env');
 
 const url = Env.MONGO_DB;
 
+let initialized = false;
+
 debug(`configuring mongoose connection to ${url}`);
 
 mongoose.Promise = Promise;
 
 mongoose.set('debug', Env.NODE_ENV === 'development');
-
-let initialized = false;
 
 const connect = () => mongoose.connect(url, {
   reconnectTries: Number.MAX_VALUE,

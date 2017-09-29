@@ -17,7 +17,7 @@ const routes = require('./routes');
 module.exports = (port) => {
   const app = fastify({
     logger: {
-      level: 'fatal',
+      level: Env.REQUEST_LOG_LEVEL,
       stream: config.logger.stream,
     },
   });
