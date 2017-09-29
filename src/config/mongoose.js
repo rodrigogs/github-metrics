@@ -11,37 +11,36 @@ mongoose.Promise = Promise;
 
 mongoose.set('debug', Env.NODE_ENV === 'development');
 
+let initialized = false;
+
 const connect = () => mongoose.connect(url, {
   reconnectTries: Number.MAX_VALUE,
   useMongoClient: true,
+}).then((conn) => {
+  initialized = true;
+  return conn;
 });
 
-connect();
+mongoose.connection.on('connected', () => logger.info(`Mongoose default connection open to ${url}`));
 
-module.exports = new Promise((resolve, reject) => {
-  mongoose.connection.on('connected', () => logger.info(`Mongoose default connection open to ${url}`));
+mongoose.connection.on('error', err => initialized && logger.error(`Mongoose default connection error: ${err}`));
 
-  mongoose.connection.on('error', (err) => {
-    logger.error(`Mongoose default connection error: ${err}`);
-    reject(err);
-  });
-
-  mongoose.connection.on('disconnected', () => {
+mongoose.connection.on('disconnected', () => {
+  if (initialized) {
     logger.info('Mongoose default connection disconnected');
     logger.info(`Reconnecting in ${Env.RECONNECTION_INTERVAL / 1000} seconds`);
 
     setTimeout(() => connect(), Env.RECONNECTION_INTERVAL);
-  });
+  }
+});
 
-  mongoose.connection.once('open', () => {
-    logger.info('Mongoose default connection is open');
-    resolve();
-  });
+mongoose.connection.once('open', () => logger.info('Mongoose default connection is open'));
 
-  process.on('SIGINT', () => {
-    mongoose.connection.close(() => {
-      logger.error('Mongoose default connection disconnected through app termination');
-      process.exit(0);
-    });
+process.on('SIGINT', () => {
+  mongoose.connection.close(() => {
+    logger.error('Mongoose default connection disconnected through app termination');
+    process.exit(0);
   });
 });
+
+module.exports = connect();

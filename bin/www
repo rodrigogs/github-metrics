@@ -1,11 +1,14 @@
 #!/usr/bin/env node
 
+const logger = require('../src/config/logger');
+
 const app = require('../src/app');
 
 app()
   .then((instance) => {
-    console.log('Application running on port', instance.server.address().port);
+    logger.info('Application running on port', instance.server.address().port);
   })
   .catch((err) => {
-    console.error('Application crached', err);
+    logger.error('Application crashed:', err);
+    process.exit(1);
   });
