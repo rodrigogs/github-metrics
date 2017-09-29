@@ -22,7 +22,7 @@ module.exports = (port) => {
     },
   });
 
-  port = port || Env.PORT || 3000;
+  port = port || Env.PORT;
 
   app.register(helmet);
   app.register(formBody);
