@@ -38,7 +38,7 @@ class Env {
    * @constructor
    */
   static get MONGO_DB() {
-    return process.env.MONGO_DB;
+    return process.env.MONGO_DB || 'mongodb://localhost:27017/github-metrics';
   }
 
   /**
