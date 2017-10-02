@@ -85,16 +85,48 @@ class Env {
    * @return {string}
    * @constructor
    */
-  static get GITHUB_TOKEN() {
-    return process.env.GITHUB_TOKEN;
+  static get ALLOWED_GITHUB_COMPANY_NAME() {
+    return process.env.ALLOWED_GITHUB_COMPANY_NAME;
   }
 
   /**
    * @param {string} value
    * @constructor
    */
-  static set GITHUB_TOKEN(value) {
-    process.env.GITHUB_TOKEN = value;
+  static set ALLOWED_GITHUB_COMPANY_NAME(value) {
+    process.env.ALLOWED_GITHUB_COMPANY_NAME = value;
+  }
+
+  /**
+   * @return {string}
+   * @constructor
+   */
+  static get GITHUB_CLIENT_ID() {
+    return process.env.GITHUB_CLIENT_ID;
+  }
+
+  /**
+   * @param {string} value
+   * @constructor
+   */
+  static set GITHUB_CLIENT_ID(value) {
+    process.env.GITHUB_CLIENT_ID = value;
+  }
+
+  /**
+   * @return {string}
+   * @constructor
+   */
+  static get GITHUB_CLIENT_SECRET() {
+    return process.env.GITHUB_CLIENT_SECRET;
+  }
+
+  /**
+   * @param {string} value
+   * @constructor
+   */
+  static set GITHUB_CLIENT_SECRET(value) {
+    process.env.GITHUB_CLIENT_SECRET = value;
   }
 }
 

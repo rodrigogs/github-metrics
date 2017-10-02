@@ -1,14 +1,25 @@
-const Env = require('../config/env');
 const GitHubApi = require('github');
 
-const GitHubProvider = new GitHubApi({
-  Promise: global.Promise,
-  host: 'api.github.com',
-});
+class GitHubProvider extends GitHubApi {
+  /**
+   * @param {Object} auth
+   * @param {String} auth.type
+   * @param {String} auth.username For `basic` authentication type
+   * @param {String} auth.password For `basic` authentication type
+   * @param {String} auth.key For `oauth` authentication type
+   * @param {String} auth.secret For `oauth` authentication type
+   * @param {String} auth.token For `oauth` or `token` authentication types
+   * @param {String} auth.jwt For `integration` authentication type
+   * @return {Object} GitHub authenticated instance
+   */
+  constructor(auth) {
+    super({
+      Promise: global.Promise,
+      host: 'api.github.com',
+    });
 
-GitHubProvider.authenticate({
-  type: 'token',
-  token: Env.GITHUB_TOKEN,
-});
+    this.authenticate(auth);
+  }
+}
 
 module.exports = GitHubProvider;

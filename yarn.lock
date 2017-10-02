@@ -2,7 +2,7 @@
 # yarn lockfile v1
 
 
-"@types/node@*", "@types/node@^8.0.30":
+"@types/node@*", "@types/node@^8.0.31":
   version "8.0.31"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-8.0.31.tgz#d9af61093cf4bfc9f066ca34de0175012cfb0ce9"
 
@@ -15,6 +15,10 @@
 abbrev@1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/abbrev/-/abbrev-1.1.1.tgz#f8f2c887ad10bf67f634f005b6987fed3179aac8"
+
+abstract-logging@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/abstract-logging/-/abstract-logging-1.0.0.tgz#8b7deafd310559bc28f77724dd1bb30177278c1b"
 
 acorn-jsx@^3.0.0:
   version "3.0.1"
@@ -48,7 +52,7 @@ ajv@^4.9.1:
     co "^4.6.0"
     json-stable-stringify "^1.0.1"
 
-ajv@^5.2.0, ajv@^5.2.2, ajv@^5.2.3:
+ajv@^5.2.0, ajv@^5.2.3:
   version "5.2.3"
   resolved "https://registry.yarnpkg.com/ajv/-/ajv-5.2.3.tgz#c06f598778c44c6b161abafe3466b81ad1814ed2"
   dependencies:
@@ -1069,6 +1073,13 @@ fast-safe-stringify@^1.0.8, fast-safe-stringify@^1.1.11, fast-safe-stringify@^1.
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/fast-safe-stringify/-/fast-safe-stringify-1.2.0.tgz#ebd42666fd18fe4f2ba4f0d295065f3f85cade96"
 
+fastify-auth@^0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/fastify-auth/-/fastify-auth-0.1.0.tgz#af1a2e105235325400ed84783f4a91289e2a4477"
+  dependencies:
+    fastify-plugin "^0.1.0"
+    reusify "^1.0.1"
+
 fastify-cli@^0.7.0:
   version "0.7.0"
   resolved "https://registry.yarnpkg.com/fastify-cli/-/fastify-cli-0.7.0.tgz#59f6f3b4710fd7afe5d42333f86af5c4a73e5398"
@@ -1117,18 +1128,20 @@ fastify-router@^1.0.0:
     fastify-plugin "^0.1.1"
 
 fastify@^0.29.0:
-  version "0.29.0"
-  resolved "https://registry.yarnpkg.com/fastify/-/fastify-0.29.0.tgz#216cb4b30c5fed62617705d564632b8dc92bdf56"
+  version "0.29.2"
+  resolved "https://registry.yarnpkg.com/fastify/-/fastify-0.29.2.tgz#ce55afd8bca4acdffab99f38275f781cf70ffc55"
   dependencies:
-    "@types/node" "^8.0.30"
+    "@types/node" "^8.0.31"
     "@types/pino" "~4.7.0"
-    ajv "^5.2.2"
+    abstract-logging "^1.0.0"
+    ajv "^5.2.3"
     avvio "^2.2.0"
     fast-json-stringify "^0.13.1"
     fastify-cli "^0.7.0"
     fastseries "^1.7.2"
-    find-my-way "^1.5.0"
+    find-my-way "^1.6.2"
     flatstr "^1.0.5"
+    light-my-request "^1.0.0"
     middie "^2.0.0"
     pino "^4.7.2"
     pump "^1.0.2"
@@ -1181,9 +1194,9 @@ find-cache-dir@^0.1.1:
     mkdirp "^0.5.1"
     pkg-dir "^1.0.0"
 
-find-my-way@^1.5.0:
-  version "1.6.0"
-  resolved "https://registry.yarnpkg.com/find-my-way/-/find-my-way-1.6.0.tgz#e0699fa19f397fa30e257c0c6528ff6c0947c186"
+find-my-way@^1.6.2:
+  version "1.6.2"
+  resolved "https://registry.yarnpkg.com/find-my-way/-/find-my-way-1.6.2.tgz#784299ec918202b9468e6e5bbd692699bf280eeb"
 
 find-up@^1.0.0:
   version "1.1.2"
@@ -1998,6 +2011,12 @@ levn@^0.3.0, levn@~0.3.0:
   dependencies:
     prelude-ls "~1.1.2"
     type-check "~0.3.2"
+
+light-my-request@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/light-my-request/-/light-my-request-1.0.0.tgz#0414bc5575750ee2c2225a726ecfbb38e7dbcdef"
+  dependencies:
+    ajv "^5.2.3"
 
 linkify-it@^2.0.0:
   version "2.0.3"
@@ -3009,7 +3028,7 @@ restore-cursor@^2.0.0:
     onetime "^2.0.0"
     signal-exit "^3.0.2"
 
-reusify@^1.0.0, reusify@^1.0.2:
+reusify@^1.0.0, reusify@^1.0.1, reusify@^1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/reusify/-/reusify-1.0.2.tgz#e3ca4a613e64daac35d40ff34819e72776bf5d85"
 

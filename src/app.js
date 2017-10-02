@@ -2,7 +2,9 @@ const debug = require('debug')('github-metrics:app');
 const fastify = require('fastify');
 const helmet = require('fastify-helmet');
 const router = require('fastify-router');
+const auth = require('fastify-auth');
 const formBody = require('fastify-formbody');
+const leveldb = require('fastify-leveldb');
 
 debug('bootstrapping application');
 
@@ -24,13 +26,16 @@ module.exports = (port) => {
 
   port = port || Env.PORT;
 
-  app.register(helmet);
-  app.register(formBody);
-
-  app.register(router, {}, (err) => {
-    if (err) throw err;
-    app.Router.route(routes);
-  });
+  app
+    .register(helmet)
+    .register(formBody)
+    .register(auth)
+    .register(leveldb, { name: 'auth' })
+    .register(router)
+    .after(() => {
+      config.auth(app);
+      app.Router.route(routes);
+    });
 
   const listen = () => new Promise((resolve, reject) => {
     app.listen(port, (err) => {
