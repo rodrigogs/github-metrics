@@ -7,10 +7,10 @@ const DateHelper = {
    * @return {*}
    */
   resolveGithubDate: (val) => {
-    if (val instanceof String) {
+    if (typeof val === 'string') {
       return new Date(Date.parse(val));
     }
-    if (val instanceof Number) {
+    if (typeof val === 'number') {
       return new Date(val * 1000);
     }
     return null;

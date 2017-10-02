@@ -18,7 +18,8 @@ const _getGitHubRequest = () => {
   if (!_gitHubRequest) {
     _gitHubRequest = axios.create({
       headers: {
-        authorization: `token ${Env.GITHUB_TOKEN}`,
+        Authorization: `token ${Env.GITHUB_TOKEN}`,
+        Accept: 'application/vnd.github.inertia-preview+json',
       },
     });
   }
