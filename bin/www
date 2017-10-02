@@ -5,8 +5,8 @@ const logger = require('../src/config/logger');
 const app = require('../src/app');
 
 app()
-  .then(() => {
-    logger.info('Application running on port', process.env.PORT);
+  .then((instance) => {
+    logger.info('Application running on port', instance.server.address().port);
   })
   .catch((err) => {
     logger.error('Application crashed:', err);
