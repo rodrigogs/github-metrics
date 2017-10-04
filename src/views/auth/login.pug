@@ -1,0 +1,18 @@
+extends ../layouts/default
+
+block stylesheets
+
+block javascripts
+
+block content
+  .container
+    form
+      .form-group
+        if isAuthenticated
+          a(href='/auth/github' class='btn btn-secondary btn-lg btn-block')
+            | Renew token
+          a(href='/auth/logout' class='btn btn-danger btn-lg btn-block')
+            | Logout
+        else
+          a(href='/auth/github' class='btn btn-secondary btn-lg btn-block')
+            | Login with GitHub

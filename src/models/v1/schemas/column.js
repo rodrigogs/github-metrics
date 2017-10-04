@@ -9,6 +9,7 @@ const ColumnSchema = new Schema({
   id: Number,
   name: String,
   url: String,
+  after_id: Number,
   project_url: String,
   cards_url: String,
   project: ProjectSchema,

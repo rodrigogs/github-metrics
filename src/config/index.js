@@ -5,7 +5,8 @@ debug('loading app configuration');
 require('./promise');
 
 module.exports = {
-  env: require('./env'),
+  Env: require('./env'),
   logger: require('./logger'),
   mongoose: require('./mongoose'),
+  passport: require('./passport'),
 };

@@ -9,6 +9,8 @@ const ColumnSchema = require('./column');
 
 const CardSchema = new Schema({
   url: String,
+  after_id: Number,
+  column_id: Number,
   column_url: String,
   content_url: String,
   id: Number,

@@ -1,4 +1,4 @@
-const debug = require('debug')('github-metrics:controllers:feed');
+const debug = require('debug')('github-metrics:controllers:v1:feed');
 
 const FeedService = require('../../services/v1/feed');
 
@@ -16,15 +16,18 @@ const FeedController = {
    * @apiExample Example usage:
    * curl -X POST http://localhost:3000/github
    */
-  github: async (request, reply) => {
+  github: async (req, res, next) => {
     debug('executing index action');
 
-    const type = request.headers['x-github-event'];
-    const payload = request.body;
+    const type = req.headers['x-github-event'];
+    const payload = req.body;
 
-    await FeedService.github(type, payload);
-
-    reply.code(200).send({ message: 'ok' });
+    try {
+      await FeedService.github(type, payload);
+      res.send({ message: 'ok' });
+    } catch (err) {
+      next(err);
+    }
   },
 
 };

@@ -14,10 +14,10 @@ const HealthcheckController = {
    * @apiExample Example usage:
    * curl -i http://localhost:3000/
    */
-  index: (request, reply) => {
+  index: (req, res) => {
     debug('executing index action');
 
-    reply.code(200).send({ status: 'ok' });
+    res.status(200).send({ status: 'ok' });
   },
 
 };

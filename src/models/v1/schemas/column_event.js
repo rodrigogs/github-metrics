@@ -18,6 +18,9 @@ const ColumnEventSchema = new Schema({
     default: new Date(),
     required: true,
   },
+  changes: {
+    name: String,
+  },
   project_column: ColumnSchema,
   repository: RepositorySchema,
   organization: OrganizationSchema,

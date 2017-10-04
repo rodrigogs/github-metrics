@@ -18,6 +18,14 @@ const CardEventSchema = new Schema({
     default: new Date(),
     required: true,
   },
+  changes: {
+    note: {
+      from: String,
+    },
+    column_id: {
+      from: Number,
+    },
+  },
   project_card: CardSchema,
   repository: RepositorySchema,
   organization: OrganizationSchema,
