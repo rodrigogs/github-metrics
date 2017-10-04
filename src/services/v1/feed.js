@@ -1,7 +1,4 @@
-const debug = require('debug')('github-metrics:services:feed');
-const axios = require('axios');
-
-const Env = require('../../config/env');
+const debug = require('debug')('github-metrics:services:v1:feed');
 
 const Project = require('../../models/v1/project');
 const Card = require('../../models/v1/card');
@@ -11,21 +8,7 @@ const CardEvent = require('../../models/v1/card_event');
 const ColumnEvent = require('../../models/v1/column_event');
 const ProjectEvent = require('../../models/v1/project_event');
 const IssueEvent = require('../../models/v1/issue_event');
-
-let _gitHubRequest;
-
-const _getGitHubRequest = () => {
-  if (!_gitHubRequest) {
-    _gitHubRequest = axios.create({
-      headers: {
-        Authorization: `token ${Env.GITHUB_TOKEN}`,
-        Accept: 'application/vnd.github.inertia-preview+json',
-      },
-    });
-  }
-
-  return _gitHubRequest;
-};
+const AuthService = require('../auth');
 
 const _saveOrUpdate = Schema => (oldObj, newObj) => {
   if (oldObj) return Object.assign(oldObj, newObj).save();
@@ -40,7 +23,8 @@ const _resolveReference = Schema => async (field, url) => {
 
   const old = await Schema.findOne(query);
   try {
-    const req = await _getGitHubRequest().get(url);
+    const request = await AuthService.buildGitHubRequest();
+    const req = await request.get(url);
     const ref = req.data;
     await _saveOrUpdate(Schema)(old, ref);
     return ref;

@@ -1,6 +1,7 @@
+const axios = require('axios');
 const GitHubApi = require('github');
 
-class GitHubProvider extends GitHubApi {
+class GitHub extends GitHubApi {
   /**
    * @param {Object} auth
    * @param {String} auth.type
@@ -22,4 +23,24 @@ class GitHubProvider extends GitHubApi {
   }
 }
 
-module.exports = GitHubProvider;
+let _gitHubRequest;
+let _token;
+
+const request = (token) => {
+  if (!_gitHubRequest || token !== _token) {
+    _token = token;
+    _gitHubRequest = axios.create({
+      headers: {
+        Authorization: `token ${token}`,
+        Accept: 'application/vnd.github.inertia-preview+json',
+      },
+    });
+  }
+
+  return _gitHubRequest;
+};
+
+module.exports = {
+  Api: GitHub,
+  request,
+};

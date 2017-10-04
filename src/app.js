@@ -1,10 +1,11 @@
+const path = require('path');
 const debug = require('debug')('github-metrics:app');
-const fastify = require('fastify');
-const helmet = require('fastify-helmet');
-const router = require('fastify-router');
-const auth = require('fastify-auth');
-const formBody = require('fastify-formbody');
-const leveldb = require('fastify-leveldb');
+const express = require('express');
+const helmet = require('helmet');
+const cors = require('cors');
+const morgan = require('morgan');
+const bodyParser = require('body-parser');
+const compression = require('compression');
 
 debug('bootstrapping application');
 
@@ -17,25 +18,21 @@ const routes = require('./routes');
  * @return {Promise.<*>} fastify instance
  */
 module.exports = (port) => {
-  const app = fastify({
-    logger: {
-      level: Env.REQUEST_LOG_LEVEL,
-      stream: config.logger.stream,
-    },
-  });
+  const app = express();
 
   port = port || Env.PORT;
 
-  app
-    .register(helmet)
-    .register(formBody)
-    .register(auth)
-    .register(leveldb, { name: 'auth' })
-    .register(router)
-    .after(() => {
-      config.auth(app);
-      app.Router.route(routes);
-    });
+  app.use(helmet());
+  app.use(morgan(Env.HTTP_LOG_CONFIG, { stream: config.logger.stream }));
+  app.use(cors());
+  app.use(bodyParser.json());
+  app.use(bodyParser.urlencoded({ extended: false }));
+  app.use(compression());
+  app.use('/static', express.static(path.join(__dirname, 'public')));
+  app.use(routes);
+
+  app.set('views', path.join(__dirname, 'views'));
+  app.set('view engine', 'pug');
 
   const listen = () => new Promise((resolve, reject) => {
     app.listen(port, (err) => {

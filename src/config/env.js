@@ -69,32 +69,32 @@ class Env {
    * @return {string}
    * @constructor
    */
-  static get REQUEST_LOG_LEVEL() {
-    return process.env.REQUEST_LOG_LEVEL || 'info';
+  static get HTTP_LOG_CONFIG() {
+    return process.env.HTTP_LOG_CONFIG || 'dev';
   }
 
   /**
    * @param {string} value
    * @constructor
    */
-  static set REQUEST_LOG_LEVEL(value) {
-    process.env.REQUEST_LOG_LEVEL = value;
+  static set HTTP_LOG_CONFIG(value) {
+    process.env.HTTP_LOG_CONFIG = value;
   }
 
   /**
    * @return {string}
    * @constructor
    */
-  static get ALLOWED_GITHUB_COMPANY_NAME() {
-    return process.env.ALLOWED_GITHUB_COMPANY_NAME;
+  static get GITHUB_COMPANY_NAME() {
+    return process.env.GITHUB_COMPANY_NAME;
   }
 
   /**
    * @param {string} value
    * @constructor
    */
-  static set ALLOWED_GITHUB_COMPANY_NAME(value) {
-    process.env.ALLOWED_GITHUB_COMPANY_NAME = value;
+  static set GITHUB_COMPANY_NAME(value) {
+    process.env.GITHUB_COMPANY_NAME = value;
   }
 
   /**
@@ -127,6 +127,25 @@ class Env {
    */
   static set GITHUB_CLIENT_SECRET(value) {
     process.env.GITHUB_CLIENT_SECRET = value;
+  }
+
+  /**
+   * @example
+   * [redis:]//[[user][:password@]][host][:port]
+   * [/db-number][?db=db-number[&password=bar[&option=value]]]
+   * @return {string}
+   * @constructor
+   */
+  static get REDIS_URL() {
+    return process.env.REDIS_URL;
+  }
+
+  /**
+   * @param {string} value
+   * @constructor
+   */
+  static set REDIS_URL(value) {
+    process.env.REDIS_URL = value;
   }
 }
 

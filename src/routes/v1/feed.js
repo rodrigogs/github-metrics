@@ -1,25 +1,13 @@
 const debug = require('debug')('github-metrics:routes:feed');
+const express = require('express');
 
 debug('configuring routes');
 
+const router = express.Router();
+
 const FeedController = require('../../controllers/v1/feed');
 
-module.exports = [
-  {
-    method: 'POST',
-    url: '/github',
-    schema: {
-      response: {
-        200: {
-          type: 'object',
-          properties: {
-            message: {
-              type: 'string',
-            },
-          },
-        },
-      },
-    },
-    handler: FeedController.github,
-  },
-];
+router.route('/github')
+  .post(FeedController.github);
+
+module.exports = router;
