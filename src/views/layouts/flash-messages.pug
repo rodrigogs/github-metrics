@@ -1,0 +1,20 @@
+while _msg = flash.shift()
+  input.flash-message(type='hidden' data-message=_msg.message data-type=_msg.type)
+
+script.
+  document.addEventListener('DOMContentLoaded', function () {
+    toastr.options = {
+      closeButton: true,
+      newestOnTop: false,
+      progressBar: true,
+      positionClass: 'toast-bottom-full-width',
+      preventDuplicates: false
+    };
+
+    var messages = document.querySelectorAll('.flash-message');
+    for (var i = 0, len = messages.length; i < len; i++) {
+      var message = $(messages[i]);
+
+      toastr[message.data('type')](message.data('message'));
+    }
+  });

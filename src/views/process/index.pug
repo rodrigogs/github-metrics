@@ -1,0 +1,42 @@
+extends ../layouts/default
+
+block stylesheets
+
+block javascripts
+  script.
+    var input = $('[name="process"]');
+
+    $('.choose').on('change', function () {
+      if (this.checked) {
+        return input.val(this.value);
+      }
+      input.val('');
+    });
+
+    $('#run').on('click', function (e) {
+      if (!input.val()) {
+        e.preventDefault();
+      }
+    });
+
+block content
+  .container
+    form.text-center(method='post')
+      h4 Choose a process
+
+      .btn-group(data-toggle='buttons')
+        label.btn.btn-secondary
+          input.choose(type='radio' name='options' autocomplete='off' value='load-projects')
+          |  Load Projects
+        label.btn.btn-secondary
+          input.choose(type='radio' name='options' autocomplete='off' value='load-issues')
+          |  Load Issues
+        label.btn.btn-secondary
+          input.choose(type='radio' name='options' autocomplete='off' value='summarize')
+          |  Summarize
+
+      .input-group
+        br
+        input(type='hidden' value='' name='process')
+
+      button#run.btn.btn-primary Run

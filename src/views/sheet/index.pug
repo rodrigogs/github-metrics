@@ -1,0 +1,14 @@
+extends ../layouts/default
+
+block stylesheets
+
+block javascripts
+
+block content
+  .container
+    form(method='post' enctype='multipart/form-data')
+      .form-group
+        label(for='sheet') Upload your spreadsheet
+        input#sheet.form-control-file(name='sheet' type='file')
+
+      button.btn.btn-primary Primary

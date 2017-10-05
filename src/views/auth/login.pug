@@ -8,7 +8,7 @@ block content
   .container
     form
       .form-group
-        if isAuthenticated
+        if is_authenticated
           a(href='/auth/github' class='btn btn-secondary btn-lg btn-block')
             | Renew token
           a(href='/auth/logout' class='btn btn-danger btn-lg btn-block')
