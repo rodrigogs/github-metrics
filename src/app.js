@@ -6,6 +6,7 @@ const cors = require('cors');
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const compression = require('compression');
+const fileUpload = require('express-fileupload');
 
 debug('bootstrapping application');
 
@@ -20,11 +21,12 @@ const routes = require('./routes');
 module.exports = (port) => {
   const app = express();
 
-  port = port || Env.PORT;
+  app.locals.app_name = Env.APP_NAME;
 
   app.use(helmet());
   app.use(morgan(Env.HTTP_LOG_CONFIG, { stream: config.logger.stream }));
   app.use(cors());
+  app.use(fileUpload({ debug: true }));
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({ extended: false }));
   app.use(compression());
@@ -35,10 +37,12 @@ module.exports = (port) => {
   app.set('view engine', 'pug');
 
   const listen = () => new Promise((resolve, reject) => {
-    app.listen(port, (err) => {
+    port = port || Env.PORT;
+
+    const server = app.listen(port, (err) => {
       /* istanbul ignore next */
       if (err) return reject(err);
-      resolve(app);
+      resolve(server);
     });
   });
 

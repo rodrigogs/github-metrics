@@ -2,20 +2,12 @@ const mongoose = require('mongoose');
 
 const { Schema } = mongoose;
 
-const AccessTokenSchema = new Schema({
-  token: {
+const ConfigSchema = new Schema({
+  key: {
     type: String,
     required: true,
   },
-  provider: {
-    type: String,
-    enum: ['github'],
-    required: true,
-  },
-  active: {
-    type: Boolean,
-    default: true,
-  },
+  value: Schema.Types.Mixed,
   created_at: {
     type: Date,
     default: new Date(),
@@ -26,9 +18,9 @@ const AccessTokenSchema = new Schema({
   },
 });
 
-AccessTokenSchema.pre('save', function preSave(next) {
+ConfigSchema.pre('save', function preSave(next) {
   this.updated_at = new Date();
   next();
 });
 
-module.exports = AccessTokenSchema;
+module.exports = ConfigSchema;

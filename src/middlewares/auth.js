@@ -9,6 +9,8 @@ const AuthenticationMiddleware = {
 
     try {
       const isAuthenticated = await AuthService.isAuthenticated();
+      res.locals.is_authenticated = isAuthenticated;
+
       if (isAuthenticated) {
         debug('GitHub is authenticated');
         return next();

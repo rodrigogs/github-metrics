@@ -5,6 +5,14 @@ class Env {
    * @return {string}
    * @constructor
    */
+  static get APP_NAME() {
+    return process.env.APP_NAME || 'GitHub Metrics';
+  }
+
+  /**
+   * @return {string}
+   * @constructor
+   */
   static get NODE_ENV() {
     return process.env.NODE_ENV || 'development';
   }

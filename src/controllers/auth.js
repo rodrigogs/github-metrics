@@ -1,4 +1,4 @@
-const debug = require('debug')('github-metrics:controllers:v1:auth');
+const debug = require('debug')('github-metrics:controllers:auth');
 const passport = require('passport');
 
 const AuthService = require('../services/auth');
@@ -16,7 +16,7 @@ const AuthController = {
 
     try {
       const isAuthenticated = await AuthService.isAuthenticated();
-      res.render('auth/login', { isAuthenticated });
+      res.render('auth/login', { is_authenticated: isAuthenticated });
     } catch (err) {
       next(err);
     }
@@ -33,6 +33,7 @@ const AuthController = {
 
     try {
       await AuthService.deleteToken();
+      req.flash('info', 'Logged out successfully');
       res.redirect('/auth/login');
     } catch (err) {
       next(err);
@@ -44,7 +45,8 @@ const AuthController = {
   githubCallback: (req, res, next) => {
     passport.authenticate('github', (err) => {
       if (err) return next(err);
-      res.redirect('/auth/login');
+      req.flash('info', 'GitHub successfully authenticated');
+      res.redirect('/');
     })(req, res, next);
   },
 
