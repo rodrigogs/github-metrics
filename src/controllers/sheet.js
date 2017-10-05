@@ -26,8 +26,10 @@ const SheetController = {
     debug('executing load action');
 
     const { sheet } = req.files;
-    req.flash('error', 'Select a file');
-    if (!sheet) return res.redirect('/sheet');
+    if (!sheet) {
+      req.flash('error', 'Select a file');
+      return res.redirect('/sheet');
+    }
 
     try {
       await SheetService.read(sheet.data);
