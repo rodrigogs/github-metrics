@@ -1,4 +1,4 @@
-const debug = require('debug')('github-metrics:services:v1:auth');
+const debug = require('debug')('github-metrics:services:auth');
 
 const Env = require('../config/env');
 const GitHubProvider = require('../providers/github');
