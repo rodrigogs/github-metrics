@@ -1,6 +1,7 @@
 const debug = require('debug')('github-metrics:routes:index');
 const session = require('express-session');
 const flash = require('flash');
+const passport = require('passport');
 
 debug('configuring routes');
 
@@ -12,6 +13,7 @@ const GeneralMiddleware = require('../middlewares/general');
 const AuthMiddleware = require('../middlewares/auth');
 const ErrorsMiddleware = require('../middlewares/errors');
 const HealthyCheckController = require('../controllers/healthcheck');
+const DashboardController = require('../controllers/dashboard');
 
 const auth = require('./auth');
 const sheet = require('./sheet');
@@ -30,6 +32,8 @@ router.use('/api', apiRouter);
 // Session for the app only
 appRouter.use(session({ secret: 'my-secret', resave: false, saveUninitialized: true }));
 appRouter.use(flash());
+appRouter.use(passport.initialize());
+appRouter.use(passport.session());
 
 // Healthy check
 appRouter.get('/healthcheck', HealthyCheckController.index);
@@ -38,16 +42,16 @@ appRouter.get('/healthcheck', HealthyCheckController.index);
 appRouter.use('/auth', auth);
 
 // Dashboard
-appRouter.get('/', AuthMiddleware.ensureAuthenticated, (req, res) => res.render('index')); // TODO dashboard controller
+appRouter.get('/', AuthMiddleware.ensureFullyAuthenticated, DashboardController.index);
 
 // Sheet
-appRouter.use('/sheet', AuthMiddleware.ensureAuthenticated, sheet);
+appRouter.use('/sheet', AuthMiddleware.ensureFullyAuthenticated, sheet);
 
 // Process
-appRouter.use('/process', AuthMiddleware.ensureAuthenticated, process);
+appRouter.use('/process', AuthMiddleware.ensureFullyAuthenticated, process);
 
 // API versions
-apiRouter.use('/v1', AuthMiddleware.ensureAuthenticated, v1);
+apiRouter.use('/v1', AuthMiddleware.ensureAppAuthenticated, v1);
 
 // catch 404 and forward to error handler
 router.use(ErrorsMiddleware.notFound);

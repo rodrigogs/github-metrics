@@ -29,7 +29,7 @@
     "express-fileupload": "^0.2.0",
     "express-session": "^1.15.6",
     "flash": "^1.1.0",
-    "github": "^11.0.0",
+    "githubToken": "^11.0.0",
     "helmet": "^3.8.2",
     "make-dir": "^1.0.0",
     "mongoose": "^4.11.13",

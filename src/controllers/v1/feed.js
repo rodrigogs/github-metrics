@@ -23,7 +23,7 @@ const FeedController = {
     const payload = req.body;
 
     try {
-      await FeedService.github(type, payload);
+      await FeedService.githubToken(type, payload);
       res.send({ message: 'ok' });
     } catch (err) {
       next(err);

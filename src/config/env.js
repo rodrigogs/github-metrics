@@ -138,6 +138,38 @@ class Env {
   }
 
   /**
+   * @return {string}
+   * @constructor
+   */
+  static get GITHUB_USERS_CLIENT_ID() {
+    return process.env.GITHUB_USERS_CLIENT_ID;
+  }
+
+  /**
+   * @param {string} value
+   * @constructor
+   */
+  static set GITHUB_USERS_CLIENT_ID(value) {
+    process.env.GITHUB_USERS_CLIENT_ID = value;
+  }
+
+  /**
+   * @return {string}
+   * @constructor
+   */
+  static get GITHUB_USERS_CLIENT_SECRET() {
+    return process.env.GITHUB_USERS_CLIENT_SECRET;
+  }
+
+  /**
+   * @param {string} value
+   * @constructor
+   */
+  static set GITHUB_USERS_CLIENT_SECRET(value) {
+    process.env.GITHUB_USERS_CLIENT_SECRET = value;
+  }
+
+  /**
    * @example
    * [redis:]//[[user][:password@]][host][:port]
    * [/db-number][?db=db-number[&password=bar[&option=value]]]

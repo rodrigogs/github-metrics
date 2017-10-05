@@ -39,20 +39,12 @@ const AuthService = {
     RedisProvider.del('access_token');
   },
 
-  isAuthenticated: async (provider = 'github') => {
+  isAppAuthenticated: async (provider = 'github') => {
     debug('verifying authentication for provider', provider);
 
     let token = await RedisProvider.safeGet('access_token');
     if (!token) token = await AccessToken.findOne({ provider, active: true }).exec();
     return !!token;
-
-    // try {
-    //   const request = await AuthService.buildGitHubRequest(token);
-    //   const res = await request.get('https://api.github.com/user');
-    //   return res.status === 200;
-    // } catch (ignore) {
-    //   return false;
-    // }
   },
 
   buildGitHubApi: async (accessToken) => {

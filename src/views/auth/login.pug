@@ -9,10 +9,10 @@ block content
     form
       .form-group
         if is_authenticated
-          a(href='/auth/github' class='btn btn-secondary btn-lg btn-block')
+          a(href='/auth/githubtoken' class='btn btn-secondary btn-lg btn-block')
             | Renew token
-          a(href='/auth/logout' class='btn btn-danger btn-lg btn-block')
+          a(href='/auth/deauthenticate' class='btn btn-danger btn-lg btn-block')
             | Logout
         else
-          a(href='/auth/github' class='btn btn-secondary btn-lg btn-block')
+          a(href='/auth/githubtoken' class='btn btn-secondary btn-lg btn-block')
             | Login with GitHub

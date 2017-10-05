@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 const OrganizationSchema = new Schema({
-  login: String,
+  authenticateApp: String,
   id: Number,
   url: String,
   repos_url: String,

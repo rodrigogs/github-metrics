@@ -11,11 +11,11 @@ const AuthController = {
    * @param next
    * @return {Promise.<void>}
    */
-  login: async (req, res, next) => {
-    debug('executing login action');
+  authenticateApp: async (req, res, next) => {
+    debug('executing authenticateApp action');
 
     try {
-      const isAuthenticated = await AuthService.isAuthenticated();
+      const isAuthenticated = await AuthService.isAppAuthenticated();
       res.render('auth/login', { is_authenticated: isAuthenticated });
     } catch (err) {
       next(err);
@@ -28,8 +28,8 @@ const AuthController = {
    * @param next
    * @return {Promise.<void>}
    */
-  logout: async (req, res, next) => {
-    debug('executing logout action');
+  logoutApp: async (req, res, next) => {
+    debug('executing logoutApp action');
 
     try {
       await AuthService.deleteToken();
@@ -43,7 +43,19 @@ const AuthController = {
   github: passport.authenticate('github'),
 
   githubCallback: (req, res, next) => {
-    passport.authenticate('github', (err) => {
+    passport.authenticate('github', (err, user) => {
+      if (err) return next(err);
+      req.logIn(user, (err) => {
+        if (err) return next(err);
+        res.redirect('/');
+      });
+    })(req, res, next);
+  },
+
+  githubToken: passport.authenticate('github-token'),
+
+  githubTokenCallback: (req, res, next) => {
+    passport.authenticate('github-token', (err) => {
       if (err) return next(err);
       req.flash('info', 'GitHub successfully authenticated');
       res.redirect('/');

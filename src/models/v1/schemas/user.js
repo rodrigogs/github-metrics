@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 const UserSchema = new Schema({
-  login: String,
+  authenticateApp: String,
   id: Number,
   avatar_url: String,
   gravatar_id: String,

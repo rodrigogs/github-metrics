@@ -90,7 +90,7 @@ const ProcessService = {
   execute: async (process) => {
     debug('executing process', process);
 
-    const isAuthenticated = await AuthService.isAuthenticated();
+    const isAuthenticated = await AuthService.isAppAuthenticated();
     if (!isAuthenticated) throw new Error('GitHub must be authenticated to perform this action');
 
     switch (process) {

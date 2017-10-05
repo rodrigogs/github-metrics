@@ -5,18 +5,25 @@ debug('configuring routes');
 
 const router = express.Router();
 
+const AuthenticationMiddleware = require('../middlewares/auth');
 const AuthController = require('../controllers/auth');
 
-router.route('/login')
-  .get(AuthController.login);
+router.route('/authenticate')
+  .get(AuthController.authenticateApp);
 
-router.route('/logout')
-  .get(AuthController.logout);
+router.route('/deauthenticate')
+  .get(AuthController.logoutApp);
+
+router.route('/githubtoken')
+  .get(AuthController.githubToken);
+
+router.route('/githubtoken/callback')
+  .get(AuthController.githubTokenCallback);
 
 router.route('/github')
-  .get(AuthController.github);
+  .get(AuthenticationMiddleware.ensureAppAuthenticated, AuthController.github);
 
 router.route('/github/callback')
-  .get(AuthController.githubCallback);
+  .get(AuthenticationMiddleware.ensureAppAuthenticated, AuthController.githubCallback);
 
 module.exports = router;
