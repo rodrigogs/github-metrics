@@ -38,7 +38,7 @@ class Env {
    * @constructor
    */
   static get PORT() {
-    return Number(process.env.PORT) || 3000;
+    return process.env.PORT ? Number(process.env.PORT) : 3000;
   }
 
   /**
