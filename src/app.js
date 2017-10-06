@@ -7,6 +7,7 @@ const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const compression = require('compression');
 const fileUpload = require('express-fileupload');
+const favicon = require('serve-favicon');
 
 debug('bootstrapping application');
 
@@ -30,6 +31,7 @@ module.exports = (port) => {
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({ extended: false }));
   app.use(compression());
+  app.use(favicon(path.join(__dirname, 'public', 'images', 'favicon.ico')));
   app.use('/static', express.static(path.join(__dirname, 'public')));
   app.use(routes);
 
