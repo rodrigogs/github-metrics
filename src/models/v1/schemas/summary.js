@@ -11,8 +11,8 @@ const CardEventSchema = require('./card_event');
 
 const SummarySchema = new Schema({
   project: ProjectSchema,
-  issue: IssueSchema,
   card: CardSchema,
+  issue: IssueSchema,
   root_causes: [{
     causes: [String],
     when: Date,

@@ -8,6 +8,7 @@ const Issue = require('../../models/v1/issue');
 const IssueEvent = require('../../models/v1/issue_event');
 const Summary = require('../../models/v1/summary');
 const Config = require('../../models/config');
+const RootCause = require('../../models/root_cause');
 
 /**
  * @param [date]
@@ -33,15 +34,17 @@ const _updateLastSummary = async (date = new Date(0)) => {
 
 /**
  * @param issue
- * @return {Array}
+ * @return {Promise.<Array>}
  * @private
  */
-const _findRootCauses = (issue) => {
+const _findRootCauses = async (issue) => {
   debug('looking for root causes for issue', issue.id);
 
   if (!issue) return [];
-  // TODO
-  return [];
+  const rootCauses = await RootCause.find({}).exec();
+  return rootCauses.filter((cause) => {
+    return issue.body.search(cause.pattern) !== -1;
+  });
 };
 
 /**
@@ -57,6 +60,44 @@ const _findCustomStatuses = (issue) => {
     return match.replace('[', '').replace(']', '');
   });
 };
+
+// /**
+//  * @param summary
+//  * @param cardEvent
+//  * @return {Promise.<void>}
+//  * @private
+//  */
+// const _mergeCardSummary = async (summary, cardEvent) => {
+//   const issueSummary = await Summary
+//      .findOne({ 'issue.id': cardEvent.project_card.issue.id }).exec();
+//   if (!issueSummary) return summary;
+//
+//   await Summary.remove({ 'issue.id': cardEvent.project_card.issue.id });
+//
+//   summary.issue = issueSummary.issue;
+//   summary.root_causes = issueSummary.root_causes;
+//   summary.custom_statuses = issueSummary.custom_statuses;
+//   summary.changes.push(...issueSummary.changes);
+//   summary.generated_at = summary.isNew ? issueSummary.generated_at : summary.generated_at;
+//   return summary;
+// };
+//
+// /**
+//  * @param summary
+//  * @param issueEvent
+//  * @return {Promise.<void>}
+//  * @private
+//  */
+// const _mergeIssueSummary = async (summary, issueEvent) => {
+//   const cardSummary = await Summary.findOne({ 'issue.id': issueEvent.issue.id }).exec();
+//   if (!cardSummary) return summary;
+//
+//   summary.project = cardSummary.project;
+//   summary.card = cardSummary.card;
+//   summary.changes.push(...cardSummary.changes);
+//   summary.generated_at = summary.isNew ? cardSummary.generated_at : summary.generated_at;
+//   return summary;
+// };
 
 /**
  * @param cardEvent
@@ -104,7 +145,12 @@ const _buildIssueSummary = async (issueEvent, summary = new Summary()) => {
 const _summarizeCardEvent = async (cardEvent) => {
   debug('summarizing event for card', cardEvent.project_card.id);
 
-  let summary = await Summary.findOne({ 'card.id': cardEvent.project_card.id }).exec();
+  let summary;
+  if (cardEvent.project_card.issue) {
+    summary = await Summary.findOne({ 'issue.id': cardEvent.project_card.issue.id }).exec();
+  } else {
+    summary = await Summary.findOne({ 'card.id': cardEvent.project_card.id }).exec();
+  }
   summary = await _buildCardSummary(cardEvent, summary || undefined);
 
   summary.changes.sort((a, b) => {
@@ -148,7 +194,12 @@ const _summarizeCardEvent = async (cardEvent) => {
 const _summarizeIssueEvent = async (issueEvent) => {
   debug('summarizing event for issue', issueEvent.issue.id);
 
-  let summary = await Summary.findOne({ 'issue.id': issueEvent.issue.id }).exec();
+  let summary = await Summary.findOne({
+    $or: [
+      { 'issue.id': issueEvent.issue.id },
+      { 'project_card.issue.id': issueEvent.issue.id },
+    ],
+  }).exec();
   summary = await _buildIssueSummary(issueEvent, summary || undefined);
 
   const rootCauses = _findRootCauses(summary.issue);
@@ -213,12 +264,16 @@ const SummaryService = {
   /**
    * @return {Promise.<void>}
    */
-  summarize: async () => {
+  summarize: async (fromDate) => {
     let lastSummary = await Config.findOne({ key: Config.KEYS.LAST_SUMMARY }).exec();
     if (!lastSummary) lastSummary = _updateLastSummary();
 
-    await _getSummarizedCardEvents(lastSummary.value);
-    await _getSummarizedIssueEvents(lastSummary.value);
+    fromDate = fromDate || lastSummary.value;
+
+    await Summary.remove({ generated_at: { $gte: fromDate } }).exec();
+
+    await _getSummarizedCardEvents(fromDate);
+    await _getSummarizedIssueEvents(fromDate);
   },
 
 };
