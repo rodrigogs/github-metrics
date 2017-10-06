@@ -8,10 +8,10 @@ const router = express.Router();
 const AuthenticationMiddleware = require('../middlewares/auth');
 const AuthController = require('../controllers/auth');
 
-router.route('/authenticate')
+router.route('/register')
   .get(AuthController.authenticateApp);
 
-router.route('/deauthenticate')
+router.route('/unregister')
   .get(AuthController.logoutApp);
 
 router.route('/githubtoken')

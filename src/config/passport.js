@@ -24,7 +24,7 @@ passport.deserializeUser(async (id, done) => {
 passport.use('github-token', new GitHubStrategy({
   clientID: Env.GITHUB_CLIENT_ID,
   clientSecret: Env.GITHUB_CLIENT_SECRET,
-  callbackURL: '/auth/githubtoken/callback',
+  callbackURL: `${Env.APP_URL}/auth/githubtoken/callback`,
   scope: ['user:email', 'read:org', 'repo'],
 }, async (accessToken, refreshToken, profile, cb) => {
   try {
@@ -38,7 +38,7 @@ passport.use('github-token', new GitHubStrategy({
 passport.use(new GitHubStrategy({
   clientID: Env.GITHUB_USERS_CLIENT_ID,
   clientSecret: Env.GITHUB_USERS_CLIENT_SECRET,
-  callbackURL: '/auth/github/callback',
+  callbackURL: `${Env.APP_URL}/auth/github/callback`,
   scope: ['user:email', 'read:org', 'repo'],
 }, async (accessToken, refreshToken, profile, cb) => {
   try {

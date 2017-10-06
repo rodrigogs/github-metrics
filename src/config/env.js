@@ -13,6 +13,14 @@ class Env {
    * @return {string}
    * @constructor
    */
+  static get APP_URL() {
+    return process.env.APP_URL || '';
+  }
+
+  /**
+   * @return {string}
+   * @constructor
+   */
   static get NODE_ENV() {
     return process.env.NODE_ENV || 'development';
   }

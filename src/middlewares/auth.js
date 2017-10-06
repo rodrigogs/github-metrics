@@ -14,7 +14,7 @@ const _ensureAppAuthenticated = async (req, res, next) => {
       return next();
     }
     debug('App isn\'t authenticated');
-    res.redirect('/auth/authenticate');
+    res.redirect('/auth/register');
   } catch (err) {
     next(err);
   }
