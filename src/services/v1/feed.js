@@ -112,6 +112,7 @@ const FeedService = {
       await FeedService[provider](type, payload);
     } catch (err) {
       setTimeout(async () => {
+        logger.info('retrying to save payload', type);
         try {
           let conf = await RedisProvider.safeGet(`schedule-${hash}`);
           conf = JSON.parse(conf);
