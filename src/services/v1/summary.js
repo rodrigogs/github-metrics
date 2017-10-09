@@ -268,7 +268,7 @@ const SummaryService = {
     let lastSummary = await Config.findOne({ key: Config.KEYS.LAST_SUMMARY }).exec();
     if (!lastSummary) lastSummary = _updateLastSummary();
 
-    fromDate = fromDate || lastSummary.value;
+    fromDate = fromDate || lastSummary.value || new Date(0);
 
     await Summary.remove({ generated_at: { $gte: fromDate } }).exec();
 
