@@ -5,7 +5,7 @@ const logger = require('../src/config/logger');
 const app = require('../src/app');
 
 app()
-  .then((instance) => {
+  .then(() => {
     logger.info('Application running on port', process.env.PORT);
   })
   .catch((err) => {

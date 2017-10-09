@@ -195,6 +195,14 @@ class Env {
   static set REDIS_URL(value) {
     process.env.REDIS_URL = value;
   }
+
+  /**
+   * @return {string}
+   * @constructor
+   */
+  static get SESSION_SECRET() {
+    return process.env.SESSION_SECRET;
+  }
 }
 
 module.exports = Env;

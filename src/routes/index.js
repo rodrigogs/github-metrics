@@ -2,10 +2,11 @@ const debug = require('debug')('github-metrics:routes:index');
 const session = require('express-session');
 const flash = require('flash');
 const passport = require('passport');
-
-debug('configuring routes');
-
 const express = require('express');
+const RedisStore = require('connect-redis')(session);
+
+const Env = require('../config/env');
+const redisClient = require('../providers/redis');
 
 debug('configuring routes');
 
@@ -30,7 +31,12 @@ router.use('/', appRouter);
 router.use('/api', apiRouter);
 
 // Session for the app only
-appRouter.use(session({ secret: 'my-secret', resave: false, saveUninitialized: true }));
+appRouter.use(session({
+  secret: Env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: true,
+  store: new RedisStore({ client: redisClient }),
+}));
 appRouter.use(flash());
 appRouter.use(passport.initialize());
 appRouter.use(passport.session());

@@ -21,6 +21,7 @@
     "bluebird": "^3.5.0",
     "body-parser": "^1.18.2",
     "compression": "^1.7.1",
+    "connect-redis": "^3.3.2",
     "cors": "^2.8.4",
     "debug": "^3.1.0",
     "dotenv": "^4.0.0",
