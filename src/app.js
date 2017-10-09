@@ -28,8 +28,8 @@ module.exports = (port) => {
   app.use(morgan(Env.HTTP_LOG_CONFIG, { stream: config.logger.stream }));
   app.use(cors());
   app.use(fileUpload({ debug: true }));
-  app.use(bodyParser.json());
-  app.use(bodyParser.urlencoded({ extended: false }));
+  app.use(bodyParser.json({ limit: '10mb' }));
+  app.use(bodyParser.urlencoded({ extended: false, limit: '10mb' }));
   app.use(compression());
   app.use(favicon(path.join(__dirname, 'public', 'images', 'favicon.ico')));
   app.use('/static', express.static(path.join(__dirname, 'public')));

@@ -116,12 +116,14 @@ const FeedService = {
           let conf = await RedisProvider.safeGet(`schedule-${hash}`);
           conf = JSON.parse(conf);
           RedisProvider.del(`schedule-${hash}`);
-          FeedService.schedule(conf.provider, conf.type, conf.payload);
+          await FeedService.schedule(conf.provider, conf.type, conf.payload);
         } catch (err) {
-          logger.error('not able to save an event', provider, type, payload);
+          logger.error('not able to save an event', provider, type, payload, err);
         }
       }, 60 * 1000);
 
+      logger.error('An error has occurred while trying to save an', type);
+      logger.error(err);
       throw new Error('Failed to save payload information. The scheduler will try again later.', err);
     }
   },
