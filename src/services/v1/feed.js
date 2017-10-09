@@ -1,4 +1,5 @@
 const debug = require('debug')('github-metrics:services:v1:feed');
+const objectHash = require('object-hash');
 
 const Project = require('../../models/v1/project');
 const Card = require('../../models/v1/card');
@@ -9,8 +10,11 @@ const ColumnEvent = require('../../models/v1/column_event');
 const ProjectEvent = require('../../models/v1/project_event');
 const IssueEvent = require('../../models/v1/issue_event');
 const AuthService = require('../auth');
+const RedisProvider = require('../../providers/redis');
+const logger = require('../../config/logger');
 
 const _saveOrUpdate = Schema => (oldObj, newObj) => {
+  debug('saving data for entity', Schema.constructor.modelName);
   if (oldObj) return Object.assign(oldObj, newObj).save();
   return new Schema(newObj).save();
 };
@@ -98,6 +102,28 @@ const _saveIssue = async (payload) => {
 };
 
 const FeedService = {
+
+  schedule: async (provider, type, payload) => {
+    const hash = objectHash(payload);
+
+    RedisProvider.set(`schedule-${hash}`, JSON.stringify({ provider, type, payload }));
+
+    try {
+      await FeedService[provider](type, payload);
+    } catch (err) {
+      setTimeout(async () => {
+        try {
+          const conf = await RedisProvider.safeGet(`schedule-${hash}`);
+          RedisProvider.del(`schedule-${hash}`);
+          FeedService.schedule(conf.provider, conf.type, conf.payload);
+        } catch (err) {
+          logger.error('not able to save an event', provider, type, payload);
+        }
+      }, 60 * 1000);
+
+      throw new Error('Failed to save payload information. The scheduler will try again later.', err);
+    }
+  },
 
   /**
    * @param {String} type

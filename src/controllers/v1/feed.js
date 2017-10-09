@@ -23,7 +23,7 @@ const FeedController = {
     const payload = req.body;
 
     try {
-      await FeedService.github(type, payload);
+      await FeedService.schedule('github', type, payload);
       res.sendStatus(200);
     } catch (err) {
       next(err);
