@@ -14,7 +14,7 @@ const RedisProvider = require('../../providers/redis');
 const logger = require('../../config/logger');
 
 const _saveOrUpdate = Schema => (oldObj, newObj) => {
-  debug('saving data for entity', Schema.constructor.modelName);
+  debug('saving data for entity', Schema.modelName);
   if (oldObj) return Object.assign(oldObj, newObj).save();
   return new Schema(newObj).save();
 };
