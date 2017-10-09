@@ -113,7 +113,8 @@ const FeedService = {
     } catch (err) {
       setTimeout(async () => {
         try {
-          const conf = await RedisProvider.safeGet(`schedule-${hash}`);
+          let conf = await RedisProvider.safeGet(`schedule-${hash}`);
+          conf = JSON.parse(conf);
           RedisProvider.del(`schedule-${hash}`);
           FeedService.schedule(conf.provider, conf.type, conf.payload);
         } catch (err) {
