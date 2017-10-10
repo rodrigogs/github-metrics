@@ -19,11 +19,12 @@ const FeedController = {
   github: async (req, res, next) => {
     debug('executing index action');
 
+    const delivery = req.headers['x-github-delivery'];
     const type = req.headers['x-github-event'];
     const payload = req.body;
 
     try {
-      await FeedService.schedule('github', type, payload);
+      await FeedService.schedule('github', delivery, type, payload);
       res.sendStatus(200);
     } catch (err) {
       next(err);

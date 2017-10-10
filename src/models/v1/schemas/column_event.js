@@ -8,6 +8,11 @@ const ColumnSchema = require('./column');
 const OrganizationSchema = require('./organization');
 
 const ColumnEventSchema = new Schema({
+  delivery: {
+    type: String,
+    required: true,
+    unique: true,
+  },
   action: {
     type: String,
     enum: ['created', 'edited', 'moved', 'deleted'],

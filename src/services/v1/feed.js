@@ -1,5 +1,4 @@
 const debug = require('debug')('github-metrics:services:v1:feed');
-const objectHash = require('object-hash');
 
 const Project = require('../../models/v1/project');
 const Card = require('../../models/v1/card');
@@ -17,6 +16,11 @@ const _saveOrUpdate = Schema => (oldObj, newObj) => {
   debug('saving data for entity', Schema.modelName);
   if (oldObj) return Object.assign(oldObj, newObj).save();
   return new Schema(newObj).save();
+};
+
+const _validateDelivery = Schema => async (delivery) => {
+  const old = await Schema.findOne({ delivery }).exec();
+  return !old;
 };
 
 const _resolveReference = Schema => async (field, url) => {
@@ -38,12 +42,15 @@ const _resolveReference = Schema => async (field, url) => {
 };
 
 /**
- * @param {Object} payload
+ * @param payload
  * @return {Promise.<void>}
  * @private
  */
 const _saveProject = async (payload) => {
-  const { project, action } = payload;
+  const { project, action, delivery } = payload;
+
+  const valid = await _validateDelivery(ProjectEvent)(delivery);
+  if (!valid) return Promise.resolve();
 
   const old = await Project.findOne({ id: project.id }).exec();
   if (action === 'deleted') project.deleted = true;
@@ -53,12 +60,15 @@ const _saveProject = async (payload) => {
 };
 
 /**
- * @param {Object} payload
+ * @param payload
  * @return {Promise.<void>}
  * @private
  */
 const _saveCard = async (payload) => {
-  const { project_card, action } = payload;
+  const { project_card, action, delivery } = payload;
+
+  const valid = await _validateDelivery(CardEvent)(delivery);
+  if (!valid) return Promise.resolve();
 
   const old = await Card.findOne({ id: project_card.id }).exec();
   if (action === 'deleted') project_card.deleted = true;
@@ -71,12 +81,15 @@ const _saveCard = async (payload) => {
 };
 
 /**
- * @param {Object} payload
+ * @param payload
  * @return {Promise.<void>}
  * @private
  */
 const _saveColumn = async (payload) => {
-  const { project_column, action } = payload;
+  const { project_column, action, delivery } = payload;
+
+  const valid = await _validateDelivery(ColumnEvent)(delivery);
+  if (!valid) return Promise.resolve();
 
   const old = await Column.findOne({ id: project_column.id }).exec();
   if (action === 'deleted') project_column.deleted = true;
@@ -88,12 +101,15 @@ const _saveColumn = async (payload) => {
 };
 
 /**
- * @param {Object} payload
+ * @param payload
  * @return {Promise.<void>}
  * @private
  */
 const _saveIssue = async (payload) => {
-  const { issue } = payload;
+  const { issue, delivery } = payload;
+
+  const valid = await _validateDelivery(IssueEvent)(delivery);
+  if (!valid) return Promise.resolve();
 
   const old = await Issue.findOne({ id: issue.id }).exec();
 
@@ -103,29 +119,33 @@ const _saveIssue = async (payload) => {
 
 const FeedService = {
 
-  schedule: async (provider, type, payload) => {
-    const hash = objectHash(payload);
+  schedule: async (provider, delivery, type, payload) => {
+    RedisProvider.set(`schedule-${delivery}`, JSON.stringify({
+      provider, delivery, type, payload,
+    }));
 
-    RedisProvider.set(`schedule-${hash}`, JSON.stringify({ provider, type, payload }));
+    payload.delivery = delivery;
 
     try {
       await FeedService[provider](type, payload);
+      logger.info('event saved', delivery);
     } catch (err) {
       setTimeout(async () => {
         logger.info('retrying to save payload', type);
         try {
-          let conf = await RedisProvider.safeGet(`schedule-${hash}`);
+          let conf = await RedisProvider.safeGet(`schedule-${delivery}`);
           conf = JSON.parse(conf);
-          RedisProvider.del(`schedule-${hash}`);
-          await FeedService.schedule(conf.provider, conf.type, conf.payload);
+          RedisProvider.del(`schedule-${delivery}`);
+          await FeedService.schedule(conf.provider, conf.delivery, conf.type, conf.payload);
+          logger.info('event saved with delay', delivery);
         } catch (err) {
-          logger.error('not able to save an event', provider, type, payload, err);
+          logger.error('not able to save an event', delivery, err);
         }
       }, 60 * 1000);
 
       logger.error('An error has occurred while trying to save an', type);
       logger.error(err);
-      throw new Error('Failed to save payload information. The scheduler will try again later.', err);
+      throw new Error('Failed to save payload information. The scheduler will try again later.', delivery, err);
     }
   },
 

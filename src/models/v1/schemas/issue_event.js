@@ -7,6 +7,11 @@ const RepositorySchema = require('./repository');
 const UserSchema = require('./user');
 
 const IssueEventSchema = new Schema({
+  delivery: {
+    type: String,
+    required: true,
+    unique: true,
+  },
   action: {
     type: String,
     enum: ['assigned', 'unassigned', 'labeled', 'unlabeled',

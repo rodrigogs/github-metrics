@@ -8,6 +8,11 @@ const UserSchema = require('./user');
 const OrganizationSchema = require('./organization');
 
 const CardEventSchema = new Schema({
+  delivery: {
+    type: String,
+    required: true,
+    unique: true,
+  },
   action: {
     type: String,
     enum: ['created', 'edited', 'converted', 'moved', 'deleted'],

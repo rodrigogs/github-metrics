@@ -8,6 +8,11 @@ const ProjectSchema = require('./project');
 const OrganizationSchema = require('./organization');
 
 const ProjectEventSchema = new Schema({
+  delivery: {
+    type: String,
+    required: true,
+    unique: true,
+  },
   action: {
     type: String,
     enum: ['created', 'edited', 'closed', 'reopened', 'deleted'],
