@@ -132,13 +132,13 @@ const FeedService = {
       case 'project':
         Schema = ProjectEvent;
         break;
-      case 'column':
+      case 'project_column':
         Schema = ColumnEvent;
         break;
-      case 'card':
+      case 'project_card':
         Schema = CardEvent;
         break;
-      case 'issue':
+      case 'issues':
         Schema = IssueEvent;
         break;
       default:
