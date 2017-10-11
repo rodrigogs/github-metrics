@@ -10,4 +10,7 @@ const FeedController = require('../../controllers/v1/feed');
 router.route('/github')
   .post(FeedController.github);
 
+router.route('/update')
+  .post(FeedController.update);
+
 module.exports = router;

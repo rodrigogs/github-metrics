@@ -5,6 +5,30 @@ const FeedService = require('../../services/v1/feed');
 const FeedController = {
 
   /**
+   * @api {post} /update Github webhook
+   * @apiVersion 1
+   * @apiName Github
+   * @apiGroup Webhook
+   * @apiPermission any
+   *
+   * @apiDescription Github webhook.
+   */
+  update: async (req, res, next) => {
+    debug('executing update action');
+
+    const code = req.headers['x-delivery'];
+    const type = req.headers['x-event'];
+    const delivery = req.body;
+
+    try {
+      await FeedService.update(code, type, delivery);
+      res.sendStatus(200);
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  /**
    * @api {post} /github Github webhook
    * @apiVersion 1
    * @apiName Github

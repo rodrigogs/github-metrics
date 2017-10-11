@@ -119,6 +119,48 @@ const _saveIssue = async (payload) => {
 
 const FeedService = {
 
+  /**
+   * @param code
+   * @param type
+   * @param delivery
+   * @return {Promise.<void>}
+   */
+  update: async (code, type, delivery) => {
+    let Schema;
+
+    switch (type) {
+      case 'project':
+        Schema = ProjectEvent;
+        break;
+      case 'column':
+        Schema = ColumnEvent;
+        break;
+      case 'card':
+        Schema = CardEvent;
+        break;
+      case 'issue':
+        Schema = IssueEvent;
+        break;
+      default:
+        Schema = null;
+    }
+
+    if (!Schema) throw new Error('Invalid type');
+
+    const old = await Schema.findOne({ delivery: code }).exec();
+
+    if (!old) throw new Error('Delivery not found');
+
+    return _saveOrUpdate(Schema)(old, delivery);
+  },
+
+  /**
+   * @param provider
+   * @param delivery
+   * @param type
+   * @param payload
+   * @return {Promise.<void>}
+   */
   schedule: async (provider, delivery, type, payload) => {
     RedisProvider.set(`schedule-${delivery}`, JSON.stringify({
       provider, delivery, type, payload,
