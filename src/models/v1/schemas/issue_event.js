@@ -10,7 +10,6 @@ const IssueEventSchema = new Schema({
   delivery: {
     type: String,
     required: true,
-    unique: true,
   },
   action: {
     type: String,
