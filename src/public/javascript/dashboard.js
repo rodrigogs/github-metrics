@@ -89,6 +89,8 @@
         })
         .value();
 
+      console.log(datasets);
+
       cfdChart.data = {
         labels,
         datasets,
