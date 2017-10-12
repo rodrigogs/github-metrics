@@ -17,14 +17,14 @@ const IssueEventSchema = new Schema({
       'opened', 'edited', 'milestoned', 'demilestoned', 'closed', 'reopened'],
     required: true,
   },
-  received_at: {
-    type: Date,
-    default: new Date(),
-    required: true,
-  },
   issue: IssueSchema,
   repository: RepositorySchema,
   sender: UserSchema,
+}, {
+  timestamps: {
+    createdAt: 'received_at',
+    updatedAt: 'created_at',
+  },
 });
 
 module.exports = IssueEventSchema;

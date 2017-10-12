@@ -19,9 +19,10 @@ const UserSchema = new Schema({
     type: String,
     required: true,
   },
-  created_at: {
-    type: Date,
-    default: new Date(),
+}, {
+  timestamps: {
+    createdAt: 'created_at',
+    updatedAt: 'created_at',
   },
 });
 

@@ -17,15 +17,15 @@ const ProjectEventSchema = new Schema({
     enum: ['created', 'edited', 'closed', 'reopened', 'deleted'],
     required: true,
   },
-  received_at: {
-    type: Date,
-    default: new Date(),
-    required: true,
-  },
   project: ProjectSchema,
   repository: RepositorySchema,
   organization: OrganizationSchema,
   sender: UserSchema,
+}, {
+  timestamps: {
+    createdAt: 'received_at',
+    updatedAt: 'created_at',
+  },
 });
 
 module.exports = ProjectEventSchema;

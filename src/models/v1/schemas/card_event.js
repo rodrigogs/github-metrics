@@ -17,11 +17,6 @@ const CardEventSchema = new Schema({
     enum: ['created', 'edited', 'converted', 'moved', 'deleted'],
     required: true,
   },
-  received_at: {
-    type: Date,
-    default: new Date(),
-    required: true,
-  },
   changes: {
     note: {
       from: String,
@@ -34,6 +29,11 @@ const CardEventSchema = new Schema({
   repository: RepositorySchema,
   organization: OrganizationSchema,
   sender: UserSchema,
+}, {
+  timestamps: {
+    createdAt: 'received_at',
+    updatedAt: 'created_at',
+  },
 });
 
 module.exports = CardEventSchema;

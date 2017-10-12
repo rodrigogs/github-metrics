@@ -16,19 +16,11 @@ const AccessTokenSchema = new Schema({
     type: Boolean,
     default: true,
   },
-  created_at: {
-    type: Date,
-    default: new Date(),
+}, {
+  timestamps: {
+    createdAt: 'created_at',
+    updatedAt: 'created_at',
   },
-  updated_at: {
-    type: Date,
-    default: new Date(),
-  },
-});
-
-AccessTokenSchema.pre('save', function preSave(next) {
-  this.updated_at = new Date();
-  next();
 });
 
 module.exports = AccessTokenSchema;

@@ -17,11 +17,6 @@ const ColumnEventSchema = new Schema({
     enum: ['created', 'edited', 'moved', 'deleted'],
     required: true,
   },
-  received_at: {
-    type: Date,
-    default: new Date(),
-    required: true,
-  },
   changes: {
     name: String,
   },
@@ -29,6 +24,11 @@ const ColumnEventSchema = new Schema({
   repository: RepositorySchema,
   organization: OrganizationSchema,
   sender: UserSchema,
+}, {
+  timestamps: {
+    createdAt: 'received_at',
+    updatedAt: 'created_at',
+  },
 });
 
 module.exports = ColumnEventSchema;

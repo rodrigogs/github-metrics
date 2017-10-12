@@ -8,19 +8,11 @@ const ConfigSchema = new Schema({
     required: true,
   },
   value: Schema.Types.Mixed,
-  created_at: {
-    type: Date,
-    default: new Date(),
+}, {
+  timestamps: {
+    createdAt: 'created_at',
+    updatedAt: 'created_at',
   },
-  updated_at: {
-    type: Date,
-    default: new Date(),
-  },
-});
-
-ConfigSchema.pre('save', function preSave(next) {
-  this.updated_at = new Date();
-  next();
 });
 
 module.exports = ConfigSchema;

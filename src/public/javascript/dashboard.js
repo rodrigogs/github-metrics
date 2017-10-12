@@ -74,20 +74,22 @@
         .flatten()
         .sortBy('millis')
         .groupBy('column')
-        .map((column, key) => {
-          const color = randomColor();
-
-          return {
-            data: _.map(labels, (label) => {
-              const matches = _.filter(column, ['formatedDate', label]);
-              return matches.length;
-            }),
-            label: key,
-            borderColor: color,
-            backgroundColor: Color(color).alpha(0.5).rgbString(),
-          }
-        })
+        // .map((column, key) => {
+        //   const color = randomColor();
+        //
+        //   return {
+        //     data: _.map(labels, (label) => {
+        //       const matches = _.filter(column, ['formatedDate', label]);
+        //       return matches.length;
+        //     }),
+        //     label: key,
+        //     borderColor: color,
+        //     backgroundColor: Color(color).alpha(0.5).rgbString(),
+        //   }
+        // })
         .value();
+
+      console.log(datasets);
 
       cfdChart.data = {
         labels,
