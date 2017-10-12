@@ -33,7 +33,10 @@ const AuthService = {
     if (token) return token;
 
     const accessToken = await AccessToken.findOne({ provider, active: true }).exec();
-    if (accessToken) return accessToken.token;
+    if (accessToken) {
+      RedisProvider.set('access_token', accessToken.token);
+      return accessToken.token;
+    }
   },
 
   deleteToken: async (provider = 'github') => {
@@ -64,16 +67,20 @@ const AuthService = {
   buildGitHubRequest: async (token) => {
     debug('building GitHub contextualized request');
 
+    const deauthOnError = !token;
     token = token || await AuthService.getToken();
 
     const instance = GitHubProvider.request(token);
-    instance.interceptors.response.use((res) => {
-      if (res.status === 401) AuthService.deleteToken();
-      return res;
-    }, (err) => {
-      if (err.response.status === 401) AuthService.deleteToken();
-      return err;
-    });
+
+    if (deauthOnError) {
+      instance.interceptors.response.use((res) => {
+        if (res.status === 401) AuthService.deleteToken();
+        return res;
+      }, (err) => {
+        if (err.response.status === 401) AuthService.deleteToken();
+        return err;
+      });
+    }
 
     return instance;
   },

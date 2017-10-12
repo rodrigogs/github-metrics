@@ -43,7 +43,7 @@ passport.use(new GitHubStrategy({
 }, async (accessToken, refreshToken, profile, cb) => {
   try {
     const email = profile.emails.find(email => email.primary).value;
-    const request = await AuthService.buildGitHubRequest({ token: accessToken });
+    const request = await AuthService.buildGitHubRequest(accessToken);
     const orgs = await request.get('https://api.github.com/user/orgs');
     if (orgs.data) {
       const org = orgs.data.find(o => o.login === Env.GITHUB_COMPANY_NAME);

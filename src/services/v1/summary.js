@@ -259,21 +259,45 @@ const _getSummarizedIssueEvents = async (lastSummary) => {
   return Promise.mapSeries(issueEvents, _summarizeIssueEvent);
 };
 
+let summarizing = false;
+
 const SummaryService = {
 
   /**
    * @return {Promise.<void>}
    */
-  summarize: async (fromDate) => {
+  summarize: async () => {
+    if (summarizing) {
+      debug('already summarizing');
+      return new Promise((resolve, reject) => {
+        setTimeout(() => {
+          SummaryService.summarize()
+            .then(resolve)
+            .catch(reject);
+        }, 60 * 1000);
+
+        debug('summarization delayed to 1 minute from now');
+      });
+    }
+
     let lastSummary = await Config.findOne({ key: Config.KEYS.LAST_SUMMARY }).exec();
-    if (!lastSummary) lastSummary = _updateLastSummary();
+    if (!lastSummary) lastSummary = await _updateLastSummary();
 
-    fromDate = fromDate || lastSummary.value || new Date(0);
+    const fromDate = lastSummary.value;
 
-    await Summary.remove({ generated_at: { $gte: fromDate } }).exec();
+    try {
+      summarizing = true;
 
-    await _getSummarizedCardEvents(fromDate);
-    await _getSummarizedIssueEvents(fromDate);
+      // await Summary.remove({ generated_at: { $gte: fromDate } }).exec();
+      // TODO not working properly
+
+      await _getSummarizedCardEvents(fromDate);
+      await _getSummarizedIssueEvents(fromDate);
+    } catch (err) {
+      throw err;
+    } finally {
+      summarizing = false;
+    }
   },
 
 };

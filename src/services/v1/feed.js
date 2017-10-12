@@ -9,6 +9,7 @@ const ColumnEvent = require('../../models/v1/column_event');
 const ProjectEvent = require('../../models/v1/project_event');
 const IssueEvent = require('../../models/v1/issue_event');
 const AuthService = require('../auth');
+const SummaryService = require('./summary');
 const RedisProvider = require('../../providers/redis');
 const logger = require('../../config/logger');
 
@@ -199,18 +200,16 @@ const FeedService = {
   github: (type, payload) => {
     debug('saving data for event', type);
 
-    switch (type) {
-      case 'project':
-        return _saveProject(payload);
-      case 'project_card':
-        return _saveCard(payload);
-      case 'project_column':
-        return _saveColumn(payload);
-      case 'issues':
-        return _saveIssue(payload);
-      default:
-        return Promise.resolve();
-    }
+    const promise = {
+      project: _saveProject,
+      project_card: _saveCard,
+      project_column: _saveColumn,
+      issues: _saveIssue,
+    }[type](payload) || Promise.resolve();
+
+    return promise.then(() => {
+      SummaryService.summarize();
+    });
   },
 
 };
