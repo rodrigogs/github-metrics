@@ -200,12 +200,14 @@ const FeedService = {
   github: (type, payload) => {
     debug('saving data for event', type);
 
-    const promise = {
+    const fn = {
       project: _saveProject,
       project_card: _saveCard,
       project_column: _saveColumn,
       issues: _saveIssue,
-    }[type](payload) || Promise.resolve();
+    }[type];
+
+    const promise = fn ? fn(payload) : Promise.resolve();
 
     return promise.then(() => {
       SummaryService.summarize();
