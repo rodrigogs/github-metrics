@@ -28,6 +28,14 @@ const AuthService = {
     }
   },
 
+  getToken: async (provider = 'github') => {
+    const token = await RedisProvider.safeGet('access_token');
+    if (token) return token;
+
+    const accessToken = await AccessToken.findOne({ provider, active: true }).exec();
+    if (accessToken) return accessToken.token;
+  },
+
   deleteToken: async (provider = 'github') => {
     debug('deleting token for provider', provider);
 
@@ -42,23 +50,23 @@ const AuthService = {
   isAppAuthenticated: async (provider = 'github') => {
     debug('verifying authentication for provider', provider);
 
-    let token = await RedisProvider.safeGet('access_token');
-    if (!token) token = await AccessToken.findOne({ provider, active: true }).exec();
+    const token = await AuthService.getToken();
     return !!token;
   },
 
-  buildGitHubApi: async (accessToken) => {
+  buildGitHubApi: async (token) => {
     debug('building GitHubApi');
 
-    if (!accessToken) accessToken = await AccessToken.findOne({ provider: 'github', active: true }).exec();
-    return new GitHubProvider.Api({ type: 'oauth', token: accessToken.token });
+    token = token || await AuthService.getToken();
+    return new GitHubProvider.Api({ type: 'oauth', token });
   },
 
-  buildGitHubRequest: async (accessToken) => {
+  buildGitHubRequest: async (token) => {
     debug('building GitHub contextualized request');
 
-    if (!accessToken) accessToken = await AccessToken.findOne({ provider: 'github', active: true }).exec();
-    const instance = GitHubProvider.request(accessToken.token);
+    token = token || await AuthService.getToken();
+
+    const instance = GitHubProvider.request(token);
     instance.interceptors.response.use((res) => {
       if (res.status === 401) AuthService.deleteToken();
       return res;

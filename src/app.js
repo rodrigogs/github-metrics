@@ -22,6 +22,7 @@ const routes = require('./routes');
 module.exports = (port) => {
   const app = express();
 
+  app.locals.app_url = Env.APP_URL;
   app.locals.app_name = Env.APP_NAME;
 
   app.use(helmet());

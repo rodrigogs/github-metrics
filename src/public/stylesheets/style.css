@@ -1,3 +1,10 @@
 body {
   padding-top: 5rem;
 }
+
+.progress.default-loader {
+  position: fixed;
+  top: 56px;
+  width: 100%;
+  display: none;
+}
