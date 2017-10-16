@@ -95,7 +95,7 @@ const _saveColumn = async (payload) => {
   const old = await Column.findOne({ id: project_column.id }).exec();
   if (action === 'deleted') project_column.deleted = true;
 
-  project_column.project = _resolveReference(Project)('url', project_column.project_url);
+  project_column.project = await _resolveReference(Project)('url', project_column.project_url);
 
   await _saveOrUpdate(Column)(old, project_column);
   return new ColumnEvent(payload).save();

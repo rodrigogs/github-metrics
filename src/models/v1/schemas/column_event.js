@@ -27,7 +27,7 @@ const ColumnEventSchema = new Schema({
 }, {
   timestamps: {
     createdAt: 'received_at',
-    updatedAt: 'created_at',
+    updatedAt: 'updated_at',
   },
 });
 

@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const ColumnEventSchema = require('./schemas/card_event');
+const ColumnEventSchema = require('./schemas/column_event');
 
 const ColumnEvent = mongoose.model('ColumnEvent', ColumnEventSchema);
 
