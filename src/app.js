@@ -24,6 +24,7 @@ module.exports = (port) => {
 
   app.locals.app_url = Env.APP_URL;
   app.locals.app_name = Env.APP_NAME;
+  app.locals.moment = require('moment');
 
   app.use(helmet());
   app.use(morgan(Env.HTTP_LOG_CONFIG, { stream: config.logger.stream }));

@@ -9,7 +9,6 @@ const ColumnEvent = require('../../models/v1/column_event');
 const ProjectEvent = require('../../models/v1/project_event');
 const IssueEvent = require('../../models/v1/issue_event');
 const AuthService = require('../auth');
-const SummaryService = require('./summary');
 const RedisProvider = require('../../providers/redis');
 const logger = require('../../config/logger');
 
@@ -207,12 +206,7 @@ const FeedService = {
       issues: _saveIssue,
     }[type];
 
-    const promise = fn ? fn(payload) : Promise.resolve();
-    promise.then(() => {
-      SummaryService.summarize();
-    });
-
-    return promise;
+    return fn ? fn(payload) : Promise.resolve();
   },
 
 };

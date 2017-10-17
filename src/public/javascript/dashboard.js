@@ -2,15 +2,18 @@
   /* Charts */
   let cfdChart;
 
-  /* Elements */
+  /* CFD Elements */
   let cfdCanvas;
-  let projectsSelect;
-  let loadCfdButton;
+  let cfdForm;
+  let cfdProjectSelect;
+  let cfdFromDate;
+  let cfdToDate;
+  let cfdLoadButton;
 
   const populateProjects = (projects) => {
-    projectsSelect.empty();
+    cfdProjectSelect.empty();
     projects.forEach((project) => {
-      projectsSelect.append($('<option>', {
+      cfdProjectSelect.append($('<option>', {
         text: project.name,
         value: project.id,
       }));
@@ -18,16 +21,20 @@
   };
 
   const loadProjects = () => {
-    projectsSelect.attr('disabled', 'disabled');
-    loadCfdButton.attr('disabled', 'disabled');
+    cfdProjectSelect.attr('disabled', 'disabled');
+    cfdFromDate.attr('disabled', 'disabled');
+    cfdToDate.attr('disabled', 'disabled');
+    cfdLoadButton.attr('disabled', 'disabled');
 
     $.ajax({
       url: App.getBaseUrl('/api/v1/project/'),
       dataType: 'json',
       success: populateProjects,
       complete: () => {
-        projectsSelect.removeAttr('disabled');
-        loadCfdButton.removeAttr('disabled');
+        cfdProjectSelect.removeAttr('disabled');
+        cfdFromDate.removeAttr('disabled');
+        cfdToDate.removeAttr('disabled');
+        cfdLoadButton.removeAttr('disabled');
       },
     });
   };
@@ -35,12 +42,15 @@
   const loadCfd = async (e) => {
     e.preventDefault();
 
-    const project = projectsSelect.find(':selected').val();
-    projectsSelect.attr('disabled', 'disabled');
-    loadCfdButton.attr('disabled', 'disabled');
+    const query = cfdForm.serialize();
+
+    cfdProjectSelect.attr('disabled', 'disabled');
+    cfdFromDate.attr('disabled', 'disabled');
+    cfdToDate.attr('disabled', 'disabled');
+    cfdLoadButton.attr('disabled', 'disabled');
 
     try {
-      const summaries = await getCfdData(project);
+      const summaries = await getCfdData(query);
 
       _.each(summaries, (summary) => {
         _.each(summary.board_moves, (move) => {
@@ -92,7 +102,7 @@
             data,
             label: key,
             borderColor: color,
-            backgroundColor: Color(color).alpha(0.5).rgbString(),
+            backgroundColor: Color(color).alpha(0.3).rgbString(),
           }
         })
         .value();
@@ -106,15 +116,17 @@
       console.error(err);
       toastr.error('An error has occurred');
     } finally {
-      projectsSelect.removeAttr('disabled');
-      loadCfdButton.removeAttr('disabled');
+      cfdProjectSelect.removeAttr('disabled');
+      cfdFromDate.removeAttr('disabled');
+      cfdToDate.removeAttr('disabled');
+      cfdLoadButton.removeAttr('disabled');
     }
   };
 
-  const getCfdData = (project) => new Promise((resolve, reject) => {
+  const getCfdData = (query) => new Promise((resolve, reject) => {
     $.ajax({
       method: 'GET',
-      url: App.getBaseUrl(`/api/v1/report/summary?project_id=${project}`),
+      url: App.getBaseUrl(`/api/v1/report/summary?${query}`),
       dataType: 'json',
       success: resolve,
       error: reject,
@@ -122,13 +134,16 @@
   });
 
   const initElements = () => {
+    cfdForm = $('form#cfd_form');
     cfdCanvas = $('canvas#cfd');
-    projectsSelect = $('select#projects');
-    loadCfdButton = $('button#load-cfd');
+    cfdProjectSelect = $('select#project_id');
+    cfdFromDate = $('input#from_date');
+    cfdToDate = $('input#to_date');
+    cfdLoadButton = $('button#load-cfd');
   };
 
   const initEventHandlers = () => {
-    loadCfdButton.on('click', loadCfd);
+    cfdLoadButton.on('click', loadCfd);
   };
 
   const initCharts = () => {
