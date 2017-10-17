@@ -41,6 +41,10 @@ const _loadColumns = async (project, res, api, total = 0) => {
   }
 
   const columns = res.data;
+  columns.forEach((column) => {
+    column.project = project;
+  });
+
   await Promise.all(columns.map(_saveOrUpdate('column')));
 
   debug(total += columns.length, 'columns loaded');
