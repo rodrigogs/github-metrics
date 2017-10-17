@@ -7,7 +7,7 @@ const router = express.Router();
 
 const ReportController = require('../../controllers/v1/report');
 
-router.route('/cfd')
-  .get(ReportController.cfd);
+router.route('/summary')
+  .get(ReportController.summaries);
 
 module.exports = router;

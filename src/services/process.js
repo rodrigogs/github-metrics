@@ -22,6 +22,33 @@ const _saveOrUpdate = schema => async (obj) => {
 };
 
 /**
+ * @param project
+ * @param res
+ * @param api
+ * @param total
+ * @return {Promise.<void>}
+ * @private
+ */
+const _loadColumns = async (project, res, api, total = 0) => {
+  const GitHubApi = api || await AuthService.buildGitHubApi();
+
+  if (res) {
+    res = await GitHubApi.getNextPage(res);
+  } else {
+    res = await GitHubApi.projects.getProjectColumns({
+      project_id: project.id,
+    });
+  }
+
+  const columns = res.data;
+  await Promise.all(columns.map(_saveOrUpdate('column')));
+
+  debug(total += columns.length, 'columns loaded');
+
+  if (GitHubApi.hasNextPage(res)) await _loadColumns(project, res, GitHubApi, total);
+};
+
+/**
  * @param res
  * @param api
  * @param total
@@ -101,6 +128,16 @@ const ProcessService = {
           .then(() => debug('finished loading projects'))
           .catch(err => debug('failed loading projects', err));
 
+        break;
+      case 'load-columns':
+
+        const projects = await _findSchema('project').find({}).exec();
+        projects.forEach((project) => {
+          debug('loading columns for project', project.name);
+          _loadColumns(project)
+            .then(() => debug('finished loading columns for project', project.name))
+            .catch(err => debug('failed loading columns for project', project.name, err));
+        });
         break;
       case 'load-issues':
 

@@ -7,30 +7,9 @@ const CardEvent = require('../../models/v1/card_event');
 const Issue = require('../../models/v1/issue');
 const IssueEvent = require('../../models/v1/issue_event');
 const Summary = require('../../models/v1/summary');
-const Config = require('../../models/config');
 const RootCause = require('../../models/root_cause');
-
-/**
- * @param [date]
- * @return {Promise.<*>}
- * @private
- */
-const _updateLastSummary = async (date = new Date(0)) => {
-  debug('updating last summary date');
-
-  let lastSummary = await Config.findOne({ key: Config.KEYS.LAST_SUMMARY }).exec();
-  if (!lastSummary) {
-    lastSummary = new Config({
-      key: Config.KEYS.LAST_SUMMARY,
-      value: date,
-    });
-  } else {
-    lastSummary.value = date;
-  }
-
-  await lastSummary.save();
-  return lastSummary;
-};
+const AuthService = require('../../services/auth');
+const logger = require('../../config/logger');
 
 /**
  * @param issue
@@ -59,6 +38,41 @@ const _findCustomStatuses = (issue) => {
   return (issue.title.match(/\[(.*?)]/g) || []).map((match) => {
     return match.replace('[', '').replace(']', '');
   });
+};
+
+/**
+ * @param Schema
+ * @private
+ */
+const _saveOrUpdate = Schema => (oldObj, newObj) => {
+  debug('saving data for entity', Schema.modelName);
+  if (oldObj) return Object.assign(oldObj, newObj).save();
+  return new Schema(newObj).save();
+};
+
+/**
+ * @param Schema
+ * @private
+ */
+const _resolveReference = Schema => async (field, url) => {
+  if (!url) return null;
+
+  const query = {};
+  query[field] = url;
+
+  const old = await Schema.findOne(query);
+  try {
+    const request = await AuthService.buildGitHubRequest();
+    const req = await request.get(url);
+    const ref = req.data;
+
+    if (req.status !== 200) return old;
+
+    await _saveOrUpdate(Schema)(old, ref);
+    return ref;
+  } catch (ignore) {
+    return old;
+  }
 };
 
 // /**
@@ -99,6 +113,18 @@ const _findCustomStatuses = (issue) => {
 //   return summary;
 // };
 
+const _resolveColumnAndProject = async (summary, columnUrl) => {
+  summary.card.column = await _resolveReference(Column)('url', columnUrl);
+  if (!summary.card.column) {
+    return logger.error(`Column not found for card ${summary.card.id}. The column was probably deleted.`);
+  }
+
+  summary.project = await _resolveReference(Project)('url', summary.card.column.project_url);
+  if (summary.project) {
+    logger.error(`Project not found for column ${summary.card.column.id}. The column was probably deleted.`);
+  }
+};
+
 /**
  * @param cardEvent
  * @param [summary]
@@ -108,12 +134,12 @@ const _findCustomStatuses = (issue) => {
 const _buildCardSummary = async (cardEvent, summary = new Summary()) => {
   debug('building summary for card', cardEvent.project_card.id);
 
-  summary.card = summary.card || await Card.findOne({ id: cardEvent.project_card.id }).exec();
-  summary.project = summary.project || await Project
-    .findOne({ url: summary.card.column.project_url }).exec();
-  summary.issue = summary.issue || await Issue.findOne({ url: summary.card.content_url }).exec();
+  summary.card = await Card.findOne({ id: cardEvent.project_card.id }).exec() || summary.card;
+  await _resolveColumnAndProject(summary, summary.card.column_url);
+  summary.issue = await Issue.findOne({ url: summary.card.content_url }).exec() || summary.issue;
   summary.changes = summary.changes || [];
   summary.board_moves = summary.board_moves || [];
+  summary.deliveries = summary.deliveries || [];
   return summary;
 };
 
@@ -126,14 +152,14 @@ const _buildCardSummary = async (cardEvent, summary = new Summary()) => {
 const _buildIssueSummary = async (issueEvent, summary = new Summary()) => {
   debug('building summary for issue', issueEvent.issue.id);
 
-  summary.card = summary.card || await Card.findOne({ 'issue.id': issueEvent.issue.id }).exec();
+  summary.card = await Card.findOne({ 'issue.id': issueEvent.issue.id }).exec() || summary.card;
   if (summary.card) {
-    summary.project = summary.project || await Project
-      .findOne({ url: summary.card.column.project_url }).exec();
+    await _resolveColumnAndProject(summary, summary.card.column_url);
   }
   summary.issue = summary.issue || await Issue.findOne({ id: issueEvent.issue.id }).exec();
   summary.changes = summary.changes || [];
   summary.board_moves = summary.board_moves || [];
+  summary.deliveries = summary.deliveries || [];
   return summary;
 };
 
@@ -165,7 +191,7 @@ const _summarizeCardEvent = async (cardEvent) => {
     card_event: cardEvent,
     card_before: lastChange.card_after,
     card_after: cardEvent.project_card,
-    when: cardEvent.received_at,
+    when: cardEvent.project_card.updated_at,
   });
 
   if (cardEvent.changes &&
@@ -177,12 +203,13 @@ const _summarizeCardEvent = async (cardEvent) => {
     summary.board_moves.push({
       from_column: fromColumn,
       to_column: toColumn,
-      when: cardEvent.received_at,
+      when: cardEvent.project_card.updated_at,
     });
   }
 
+  summary.deliveries.push(cardEvent.delivery);
+
   await summary.save();
-  await _updateLastSummary(cardEvent.received_at);
   return summary;
 };
 
@@ -208,14 +235,14 @@ const _summarizeIssueEvent = async (issueEvent) => {
   if (rootCauses.length) {
     summary.root_causes.push({
       causes: rootCauses,
-      when: issueEvent.received_at,
+      when: issueEvent.issue.updated_at,
     });
   }
 
   if (customStatuses.length) {
     summary.custom_statuses.push({
       statuses: customStatuses,
-      when: issueEvent.received_at,
+      when: issueEvent.issue.updated_at,
     });
   }
 
@@ -231,31 +258,34 @@ const _summarizeIssueEvent = async (issueEvent) => {
     issue_event: issueEvent,
     issue_before: lastChange.issue_after,
     issue_after: issueEvent.issue,
-    when: issueEvent.received_at,
+    when: issueEvent.issue.updated_at,
   });
 
+  summary.deliveries.push(issueEvent.delivery);
+
   await summary.save();
-  await _updateLastSummary(issueEvent.received_at);
   return summary;
 };
 
 /**
- * @param lastSummary
+ * @param processedDeliveries
  * @return {Promise.<*>}
  * @private
  */
-const _getSummarizedCardEvents = async (lastSummary) => {
-  const cardEvents = await CardEvent.find({ received_at: { $gt: lastSummary } }).exec();
+const _getSummarizedCardEvents = async (processedDeliveries) => {
+  const cardEvents = await CardEvent
+    .find({ delivery: { $not: { $in: processedDeliveries } } }).exec();
   return Promise.mapSeries(cardEvents, _summarizeCardEvent);
 };
 
 /**
- * @param lastSummary
+ * @param processedDeliveries
  * @return {Promise.<*>}
  * @private
  */
-const _getSummarizedIssueEvents = async (lastSummary) => {
-  const issueEvents = await IssueEvent.find({ received_at: { $gt: lastSummary } }).exec();
+const _getSummarizedIssueEvents = async (processedDeliveries) => {
+  const issueEvents = await IssueEvent
+    .find({ delivery: { $not: { $in: processedDeliveries } } }).exec();
   return Promise.mapSeries(issueEvents, _summarizeIssueEvent);
 };
 
@@ -280,19 +310,17 @@ const SummaryService = {
       });
     }
 
-    let lastSummary = await Config.findOne({ key: Config.KEYS.LAST_SUMMARY }).exec();
-    if (!lastSummary) lastSummary = await _updateLastSummary();
-
-    const fromDate = lastSummary.value;
-
     try {
       summarizing = true;
 
-      // await Summary.remove({ generated_at: { $gte: fromDate } }).exec();
-      // TODO not working properly
+      const summaries = await Summary.find({}, 'deliveries').exec();
+      const processedDeliveries = [];
+      summaries.forEach((summary) => {
+        processedDeliveries.push(...summary.deliveries);
+      });
 
-      await _getSummarizedCardEvents(fromDate);
-      await _getSummarizedIssueEvents(fromDate);
+      await _getSummarizedCardEvents(processedDeliveries);
+      await _getSummarizedIssueEvents(processedDeliveries);
     } catch (err) {
       throw err;
     } finally {

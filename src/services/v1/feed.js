@@ -38,7 +38,7 @@ const _resolveReference = Schema => async (field, url) => {
     await _saveOrUpdate(Schema)(old, ref);
     return ref;
   } catch (ignore) {
-    return null;
+    return old;
   }
 };
 
@@ -188,7 +188,7 @@ const FeedService = {
 
       logger.error('An error has occurred while trying to save an', type);
       logger.error(err);
-      throw new Error('Failed to save payload information. The scheduler will try again later.', delivery, err);
+      throw new Error(`Failed to save payload information for delivery '${delivery}' due to error '${err.message}'. The scheduler will try again later.`, err);
     }
   },
 
@@ -208,10 +208,11 @@ const FeedService = {
     }[type];
 
     const promise = fn ? fn(payload) : Promise.resolve();
-
-    return promise.then(() => {
+    promise.then(() => {
       SummaryService.summarize();
     });
+
+    return promise;
   },
 
 };

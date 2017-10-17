@@ -12,6 +12,7 @@ rules:
   import/extensions: off
   no-bitwise: off
   no-unused-expressions: off
+  no-case-declarations: off
 globals:
   process: on
   describe: on

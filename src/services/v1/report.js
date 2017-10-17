@@ -14,7 +14,9 @@ const Issue = require('../../models/v1/issue');
 // const logger = require('../../config/logger');
 
 const _process = async (summary) => {
-  summary.issue = await Issue.findOne({ id: summary.issue.id }).exec();
+  if (summary.issue) {
+    summary.issue = await Issue.findOne({ id: summary.issue.id }).exec();
+  }
   return summary;
 };
 
@@ -23,13 +25,20 @@ const ReportService = {
   /**
    * @return {Promise.<void>}
    */
-  cfd: async (project) => {
-    debug('fetching data for cfd report');
+  summaries: async (query) => {
+    debug('fetching data for summary report');
+
+    query.from_date = query.from_date ? new Date(query.from_date) : new Date(0);
+    query.to_date = query.to_date ? new Date(query.to_date) : new Date();
 
     const summaries = await Summary.find({
-      'project.id': Number(project),
+      'project.id': Number(query.project_id),
       issue: { $ne: null },
       board_moves: { $not: { $size: 0 } },
+      'board_moves.when': {
+        $gte: query.from_date,
+        $lte: query.to_date,
+      },
     }, {
       issue: 1,
       board_moves: 1,

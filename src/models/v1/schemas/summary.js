@@ -13,6 +13,7 @@ const SummarySchema = new Schema({
   project: ProjectSchema,
   card: CardSchema,
   issue: IssueSchema,
+  deliveries: [String],
   root_causes: [{
     causes: [String],
     when: Date,
@@ -41,9 +42,9 @@ const SummarySchema = new Schema({
     to_column: ColumnSchema,
     when: Date,
   }],
-  generated_at: {
-    type: Date,
-    default: new Date(),
+}, {
+  timestamps: {
+    createdAt: 'generated_at',
   },
 });
 

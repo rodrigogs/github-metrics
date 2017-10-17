@@ -57,8 +57,7 @@
           delete move.to_column;
         });
 
-        const distinctDays = _.groupBy(summary.board_moves, 'dayOfYear');
-        summary.board_moves = _.map(distinctDays, day => _.maxBy(day, 'millis'));
+        return _.groupBy(summary.board_moves, 'dayOfYear');
       });
 
       const labels = _(summaries)
@@ -70,18 +69,27 @@
         .value();
 
       const datasets = _(summaries)
-        .map('board_moves')
+        .map((summ) => {
+          summ.board_moves.forEach((move) => {
+            move.issue = summ.issue.number;
+          });
+          return summ.board_moves;
+        })
         .flatten()
         .sortBy('millis')
         .groupBy('column')
         .map((column, key) => {
+          column = _.uniqBy(column, column => column.issue + column.formatedDate);
           const color = randomColor();
 
+          let total = 0;
+          const data = _.map(labels, (date) => {
+            total += _.filter(column, ['formatedDate', date]).length;
+            return total;
+          });
+
           return {
-            data: _.map(labels, (label) => {
-              const matches = _.filter(column, ['formatedDate', label]);
-              return matches.length;
-            }),
+            data,
             label: key,
             borderColor: color,
             backgroundColor: Color(color).alpha(0.5).rgbString(),
@@ -106,7 +114,7 @@
   const getCfdData = (project) => new Promise((resolve, reject) => {
     $.ajax({
       method: 'GET',
-      url: App.getBaseUrl(`/api/v1/report/cfd?project_id=${project}`),
+      url: App.getBaseUrl(`/api/v1/report/summary?project_id=${project}`),
       dataType: 'json',
       success: resolve,
       error: reject,
