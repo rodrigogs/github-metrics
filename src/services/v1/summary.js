@@ -120,7 +120,7 @@ const _resolveColumnAndProject = async (summary, columnUrl) => {
   }
 
   summary.project = await _resolveReference(Project)('url', summary.card.column.project_url);
-  if (summary.project) {
+  if (!summary.project) {
     logger.error(`Project not found for column ${summary.card.column.id}. The column was probably deleted.`);
   }
 };
