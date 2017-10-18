@@ -18,7 +18,9 @@ const ColumnEventSchema = new Schema({
     required: true,
   },
   changes: {
-    name: String,
+    name: {
+      from: String,
+    },
   },
   project_column: ColumnSchema,
   repository: RepositorySchema,
