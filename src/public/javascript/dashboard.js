@@ -149,6 +149,34 @@
   const initCharts = () => {
     cfdChart = new Chart(cfdCanvas[0], {
       type: 'line',
+      options: {
+        responsive: true,
+        title:{
+          display: true,
+          text:"Chart.js Line Chart - Stacked Area"
+        },
+        tooltips: {
+          mode: 'index',
+        },
+        hover: {
+          mode: 'index'
+        },
+        scales: {
+          xAxes: [{
+            scaleLabel: {
+              display: true,
+              labelString: 'Month'
+            }
+          }],
+          yAxes: [{
+            stacked: true,
+            scaleLabel: {
+              display: true,
+              labelString: 'Value'
+            }
+          }]
+        }
+      },
     });
   };
 
