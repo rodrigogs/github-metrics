@@ -204,7 +204,7 @@ const _summarizeCardEvent = async (cardEvent) => {
     when: cardEvent.project_card.updated_at,
   });
 
-  if (cardEvent.changes && cardEvent.changes.column_id) {
+  if ((cardEvent.changes && cardEvent.changes.column_id) || cardEvent.action === 'created') {
     const fromColumn = (cardEvent.action === 'moved')
       ? await Column.findOne({ id: cardEvent.changes.column_id.from }).exec() : null;
     const toColumn = await Column.findOne({ url: cardEvent.project_card.column_url }).exec();
