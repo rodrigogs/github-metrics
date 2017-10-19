@@ -11,7 +11,7 @@ const ReportController = {
    * @return {Promise.<void>}
    */
   find: async (req, res, next) => {
-    debug('executing index action');
+    debug('executing find action');
 
     try {
       const projects = await ProjectService.find();

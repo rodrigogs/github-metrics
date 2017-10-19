@@ -14,6 +14,8 @@ const ColumnSchema = new Schema({
   cards_url: String,
   project: ProjectSchema,
   deleted: Boolean,
+  order: Number,
+  visible: Boolean,
   created_at: {
     type: Date,
     set: DateHelper.resolveGithubDate,

@@ -1,0 +1,28 @@
+form#report_form
+  .form-row
+
+    .form-group.col-md-4
+      label(for='project_id') Project
+      select.form-control#project_id(name='project_id' required)
+
+    .form-group.col-md-1.align-self-end
+      button.btn.btn-secondary.btn-block#manage_columns(type='button' title='Columns')
+        span.fa.fa-columns
+
+    .form-group.col-md-3
+      label(for='from_date') From date
+      .input-group.date(data-provide='datepicker' data-date-format='dd/mm/yyyy')
+        input.form-control#from_date(name='from_date' type='text' value= moment().startOf('month').format('DD/MM/YYYY'))
+        .input-group-addon
+          span.fa.fa-calendar
+
+    .form-group.col-md-3
+      label(for='to_date') To date
+      .input-group.date(data-provide='datepicker' data-date-format='dd/mm/yyyy')
+        input.form-control#to_date(name='to_date' type='text' value= moment().format('DD/MM/YYYY'))
+        .input-group-addon
+          span.fa.fa-calendar
+
+    .form-group.col-md-1.align-self-end
+      button.btn.btn-primary.btn-block#load_report(type='submit' title='Load')
+        span.fa.fa-play

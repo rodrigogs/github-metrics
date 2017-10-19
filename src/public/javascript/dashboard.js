@@ -2,52 +2,86 @@
   /* Charts */
   let cfdChart;
 
-  /* CFD Elements */
+  /* Elements */
+  let reportForm;
+  let projectSelect;
+  let columnsSelect;
+  let fromDate;
+  let toDate;
+  let loadButton;
   let cfdCanvas;
-  let cfdForm;
-  let cfdProjectSelect;
-  let cfdFromDate;
-  let cfdToDate;
-  let cfdLoadButton;
+  let leadTimeCanvas;
+  let wipCanvas;
+
+  const disableControls = () => {
+    projectSelect.attr('disabled', 'disabled');
+    columnsSelect.attr('disabled', 'disabled');
+    fromDate.attr('disabled', 'disabled');
+    toDate.attr('disabled', 'disabled');
+    loadButton.attr('disabled', 'disabled');
+  };
+
+  const enableControls = () => {
+    projectSelect.removeAttr('disabled');
+    columnsSelect.removeAttr('disabled');
+    fromDate.removeAttr('disabled');
+    toDate.removeAttr('disabled');
+    loadButton.removeAttr('disabled');
+  };
 
   const populateProjects = (projects) => {
-    cfdProjectSelect.empty();
+    projectSelect.empty();
     projects.forEach((project) => {
-      cfdProjectSelect.append($('<option>', {
+      projectSelect.append($('<option>', {
         text: project.name,
         value: project.id,
       }));
     });
   };
 
+  const populateProjectColumns = (columns) => {
+    columnsSelect.empty();
+    columns.forEach((column) => {
+      columnsSelect.append($('<option>', {
+        text: column.name,
+        value: column.id,
+      }));
+    });
+  };
+
+  const loadProjectColumns = () => {
+    disableControls();
+
+    const project_id = projectSelect.find(':selected').val();
+
+    $.ajax({
+      url: App.getBaseUrl(`/api/v1/project/${project_id}/columns`),
+      dataType: 'json',
+      success: populateProjects,
+      complete: enableControls,
+    });
+  };
+
   const loadProjects = () => {
-    cfdProjectSelect.attr('disabled', 'disabled');
-    cfdFromDate.attr('disabled', 'disabled');
-    cfdToDate.attr('disabled', 'disabled');
-    cfdLoadButton.attr('disabled', 'disabled');
+    disableControls();
 
     $.ajax({
       url: App.getBaseUrl('/api/v1/project/'),
       dataType: 'json',
       success: populateProjects,
-      complete: () => {
-        cfdProjectSelect.removeAttr('disabled');
-        cfdFromDate.removeAttr('disabled');
-        cfdToDate.removeAttr('disabled');
-        cfdLoadButton.removeAttr('disabled');
-      },
+      complete: enableControls,
     });
   };
 
   const loadCfd = async (e) => {
     e.preventDefault();
 
-    const query = cfdForm.serialize();
+    const query = reportForm.serialize();
 
-    cfdProjectSelect.attr('disabled', 'disabled');
-    cfdFromDate.attr('disabled', 'disabled');
-    cfdToDate.attr('disabled', 'disabled');
-    cfdLoadButton.attr('disabled', 'disabled');
+    projectSelect.attr('disabled', 'disabled');
+    fromDate.attr('disabled', 'disabled');
+    toDate.attr('disabled', 'disabled');
+    loadButton.attr('disabled', 'disabled');
 
     try {
       const summaries = await getCfdData(query);
@@ -116,10 +150,10 @@
       console.error(err);
       toastr.error('An error has occurred');
     } finally {
-      cfdProjectSelect.removeAttr('disabled');
-      cfdFromDate.removeAttr('disabled');
-      cfdToDate.removeAttr('disabled');
-      cfdLoadButton.removeAttr('disabled');
+      projectSelect.removeAttr('disabled');
+      fromDate.removeAttr('disabled');
+      toDate.removeAttr('disabled');
+      loadButton.removeAttr('disabled');
     }
   };
 
@@ -134,48 +168,40 @@
   });
 
   const initElements = () => {
-    cfdForm = $('form#cfd_form');
+    reportForm = $('form#report_form');
+    projectSelect = $('select#project_id');
+    columnsSelect = $('select#project_columns');
+    fromDate = $('input#from_date');
+    toDate = $('input#to_date');
+    loadButton = $('button#load_report');
     cfdCanvas = $('canvas#cfd');
-    cfdProjectSelect = $('select#project_id');
-    cfdFromDate = $('input#from_date');
-    cfdToDate = $('input#to_date');
-    cfdLoadButton = $('button#load-cfd');
+    leadTimeCanvas = $('canvas#lead_time');
+    wipCanvas = $('canvas#wip');
   };
 
   const initEventHandlers = () => {
-    cfdLoadButton.on('click', loadCfd);
+    projectSelect.on('change', loadProjectColumns);
+    loadButton.on('click', loadCfd);
   };
 
   const initCharts = () => {
     cfdChart = new Chart(cfdCanvas[0], {
       type: 'line',
-      options: {
-        responsive: true,
-        title:{
-          display: true,
-          text:"Chart.js Line Chart - Stacked Area"
-        },
-        tooltips: {
-          mode: 'index',
-        },
-        hover: {
-          mode: 'index'
-        },
-        scales: {
-          xAxes: [{
-            scaleLabel: {
-              display: true,
-              labelString: 'Month'
-            }
-          }],
-          yAxes: [{
-            stacked: true,
-            scaleLabel: {
-              display: true,
-              labelString: 'Value'
-            }
-          }]
-        }
+      responsive: true,
+      scales: {
+        xAxes: [{
+          scaleLabel: {
+            display: true,
+            labelString: 'Days',
+          },
+        }],
+        yAxes: [{
+          stacked: true,
+          scaleLabel: {
+            display: true,
+            labelString: 'Issues',
+          },
+        }],
       },
     });
   };

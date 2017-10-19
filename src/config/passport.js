@@ -57,6 +57,7 @@ passport.use(new GitHubStrategy({
         name: profile.displayName.split(' ')[0],
         last_name: profile.displayName.split(' ').slice(1).join(' '),
         email,
+        picture: profile.photos[0].value,
       });
     }
 

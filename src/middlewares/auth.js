@@ -25,6 +25,7 @@ const _ensureAuthenticated = (req, res, next) => {
 
   const isAuthenticated = req.isAuthenticated();
   res.locals.is_authenticated = isAuthenticated;
+  res.locals.logged_user = req.user;
 
   if (isAuthenticated) {
     debug('user is authenticated');

@@ -8,9 +8,9 @@ const ProjectService = {
    * @return {Promise.<void>}
    */
   find: () => {
-    debug('fetching data for projects');
+    debug('fetching projects');
 
-    return Project.find().exec();
+    return Project.find().sort('name').exec();
   },
 
 };

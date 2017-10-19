@@ -8,3 +8,7 @@ nav.navbar.navbar-expand-md.navbar-dark.bg-dark.fixed-top
           a.nav-link(href='/sheet') Load spreadsheet
         li.nav-item(class= ((current_url || '').startsWith('/process') && 'active'))
           a.nav-link(href='/process') Run Process
+
+    if is_authenticated
+      a.navbar-brand(href='#' title=logged_user.name)
+        img.rounded-circle(src=logged_user.picture width='29' height='29' alt='')

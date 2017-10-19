@@ -1,4 +1,4 @@
-const debug = require('debug')('github-metrics:routes:feed');
+const debug = require('debug')('github-metrics:routes:v1:feed');
 const express = require('express');
 
 debug('configuring routes');
