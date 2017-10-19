@@ -78,10 +78,7 @@
 
     const query = reportForm.serialize();
 
-    projectSelect.attr('disabled', 'disabled');
-    fromDate.attr('disabled', 'disabled');
-    toDate.attr('disabled', 'disabled');
-    loadButton.attr('disabled', 'disabled');
+    disableControls();
 
     try {
       const summaries = await getCfdData(query);
@@ -150,10 +147,7 @@
       console.error(err);
       toastr.error('An error has occurred');
     } finally {
-      projectSelect.removeAttr('disabled');
-      fromDate.removeAttr('disabled');
-      toDate.removeAttr('disabled');
-      loadButton.removeAttr('disabled');
+      enableControls();
     }
   };
 
