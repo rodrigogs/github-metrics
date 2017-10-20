@@ -30,8 +30,10 @@ const ColumnController = {
   update: async (req, res, next) => {
     debug('executing find action');
 
+    const { color, order, visible } = req.body;
+
     try {
-      const columns = await ColumnService.find(req.query);
+      const columns = await ColumnService.update(req.params.id, color, order, visible);
       res.status(200).send(columns);
     } catch (err) {
       next(err);

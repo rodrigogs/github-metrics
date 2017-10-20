@@ -14,6 +14,7 @@ const ColumnSchema = new Schema({
   cards_url: String,
   project: ProjectSchema,
   deleted: Boolean,
+  color: String,
   order: Number,
   visible: Boolean,
   created_at: {

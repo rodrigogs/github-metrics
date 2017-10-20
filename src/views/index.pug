@@ -13,21 +13,23 @@ block javascripts
 
 block content
   .container
+
+    include components/column-manager
     include components/report-controls
 
     #accordion(role='tablist')
       .card
         .card-header#heading_cfd(role='tab')
           h5.mb-0
-            a(data-toggle='collapse' href='#collapseCfd' aria-expanded='true' aria-controls='collapseCfd') CFD
-        .collapse.show#collapseCfd(role='tabpanel' aria-labelledby='heading_cfd' data-parent='#accordion')
+            a#cfd_card(data-toggle='collapse' href='#collapseCfd' aria-expanded='true' aria-controls='collapseCfd') CFD
+        .collapse#collapseCfd(role='tabpanel' aria-labelledby='heading_cfd' data-parent='#accordion')
           .card-body
             canvas#cfd
 
       .card
         .card-header#heading_lead_time(role='tab')
           h5.mb-0
-            a(data-toggle='collapse' href='#collapseLeadTime' aria-expanded='true' aria-controls='collapseLeadTime') Lead Time
+            a#lead_time_card(data-toggle='collapse' href='#collapseLeadTime' aria-expanded='true' aria-controls='collapseLeadTime') Lead Time
         .collapse#collapseLeadTime(role='tabpanel' aria-labelledby='heading_lead_time' data-parent='#accordion')
           .card-body
             canvas#lead_time
@@ -35,7 +37,7 @@ block content
       .card
         .card-header#heading_wip(role='tab')
           h5.mb-0
-            a(data-toggle='collapse' href='#collapseWip' aria-expanded='true' aria-controls='collapseWip') WIP
+            a#wip_card(data-toggle='collapse' href='#collapseWip' aria-expanded='true' aria-controls='collapseWip') WIP
         .collapse#collapseWip(role='tabpanel' aria-labelledby='heading_wip' data-parent='#accordion')
           .card-body
             canvas#wip

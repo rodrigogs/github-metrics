@@ -18,6 +18,8 @@ const App = ((window, document, $) => ({
 
     $(document).ajaxStart(App.startLoader);
     $(document).ajaxStop(App.stopLoader);
+
+    $('.color-picker').spectrum();
   },
 
   getBaseUrl: (path = '') => {

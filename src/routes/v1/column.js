@@ -10,4 +10,7 @@ const ColumnController = require('../../controllers/v1/column');
 router.route('/')
   .get(ColumnController.find);
 
+router.route('/:id')
+  .put(ColumnController.update);
+
 module.exports = router;

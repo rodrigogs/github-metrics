@@ -16,14 +16,18 @@ const ColumnService = {
 
   /**
    * @param id
+   * @param color
    * @param order
    * @param visible
    * @return {Promise.<void>}
    */
-  update: (id, order, visible) => {
+  update: (id, color, order, visible) => {
     debug('updating column', id);
 
-    return Column.update({ id }, { $set: { order, visible } });
+    order = Number(order);
+    visible = visible === 'true';
+
+    return Column.update({ id }, { $set: { color, order, visible } });
   },
 
 };
