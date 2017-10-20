@@ -66,7 +66,7 @@
           ${column.name}
         </th>
         <td width="75px">
-          <input type="text" class="column-color color-picker" id="column_color_${column.id}" value="${column.color || randomColor()}">
+          <input type="color" class="column-color color-picker" id="column_color_${column.id}" value="${column.color || randomColor()}">
         </td>
         <td width="90px">
           <input class="form-control" id="column_order_${column.id}" type="number" min="0" value="${column.order || 0}">        
@@ -88,7 +88,11 @@
       .map(template)
       .forEach((column => modalBody.append(column)));
 
-    $('.column-color.color-picker').spectrum();
+    $('.column-color.color-picker').spectrum({
+      showInput: true,
+      allowEmpty: false,
+      preferredFormat: 'hex',
+    });
   };
 
   const saveColumn = (column) => new Promise((resolve, reject) => {
@@ -280,7 +284,7 @@
   const initElements = () => {
     reportForm = $('form#report_form');
     projectSelect = $('select#project_id');
-    columnsModalBtn = $('select#manage_columns');
+    columnsModalBtn = $('button#manage_columns');
     columnsModal = $('#column_manager');
     closeColumnsModalBtn = $('button#close_columns_modal');
     saveColumnsBtn = $('button#save_columns');
