@@ -198,7 +198,6 @@
       .flatten()
       .sortBy('millis')
       .groupBy('column.id')
-      .filter(col => !col.visible)
       .map((col) => {
         const column = col[0] ? col[0].column : {};
         column.color = column.color || randomColor();
@@ -214,11 +213,13 @@
         return {
           data,
           order: column.order,
+          visible: column.visible,
           label: column.name,
           borderColor: column.color,
           backgroundColor: Color(column.color).alpha(0.3).rgbString(),
         }
       })
+      .filter('visible')
       .sortBy('order')
       .value();
 
