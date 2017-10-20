@@ -126,6 +126,7 @@
       closeColumnsModalBtn.click();
 
       await Promise.all(data.map(saveColumn));
+      await loadProjectColumns();
       toastr.info('Columns successfully saved!');
     } catch (err) {
       toastr.error('Error saving columns');

@@ -1,3 +1,4 @@
+/* eslint-disable prefer-destructuring */
 const passport = require('passport');
 const GitHubStrategy = require('passport-github').Strategy;
 
@@ -52,10 +53,20 @@ passport.use(new GitHubStrategy({
 
     let user = await User.findOne({ email }).exec();
     if (!user) {
+      let name;
+      let lastName;
+
+      if (profile.displayName) {
+        name = profile.displayName.split(' ')[0];
+        lastName = profile.displayName.split(' ').slice(1).join(' ');
+      } else {
+        name = profile.username;
+      }
+
       user = new User({
         provider: 'github',
-        name: profile.displayName.split(' ')[0],
-        last_name: profile.displayName.split(' ').slice(1).join(' '),
+        name,
+        last_name: lastName,
         email,
         picture: profile.photos[0].value,
       });
