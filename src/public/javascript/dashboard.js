@@ -204,8 +204,9 @@
       .sortBy('millis')
       .groupBy('column.id')
       .map((col) => {
-        const column = col[0] ? col[0].column : {};
+        const column = (col[0] || {}).column || {};
         column.color = column.color || randomColor();
+        column.order = column.order || 0;
 
         col = _.uniqBy(col, column => column.issue + column.formatedDate);
 
