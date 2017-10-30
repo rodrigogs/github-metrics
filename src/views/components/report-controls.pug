@@ -1,13 +1,9 @@
 form#report_form
   .form-row
 
-    .form-group.col-md-4
+    .form-group.col-md-6
       label(for='project_id') Project
       select.form-control#project_id(name='project_id' required)
-
-    .form-group.col-md-1.align-self-end
-      button.btn.btn-secondary.btn-block#manage_columns(type='button' title='Columns' data-toggle='modal' data-target='#column_manager')
-        span.fa.fa-columns
 
     .form-group.col-md-3
       label(for='from_date') From date
@@ -23,6 +19,15 @@ form#report_form
         .input-group-addon
           span.fa.fa-calendar
 
+  .form-row
     .form-group.col-md-1.align-self-end
-      button.btn.btn-primary.btn-block#load_report(type='submit' title='Load')
-        span.fa.fa-play
+      button.btn.btn-secondary.btn-block#manage_columns(type='button' title='Edit Columns' data-toggle='modal' data-target='#column_manager')
+        span.fa.fa-columns
+
+    .form-group.col-md-1.align-self-end
+      button.btn.btn-secondary.btn-block#manage_labels(type='button' title='Manage Labels' data-toggle='modal' data-target='#label_manager')
+        span.fa.fa-tags
+
+    .form-group.col-md-1.align-self-end
+      button.btn.btn-primary.btn-block#load_report(type='submit' title='Refresh Data')
+        span.fa.fa-refresh

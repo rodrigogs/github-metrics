@@ -9,10 +9,12 @@ const feed = require('./feed');
 const report = require('./report');
 const project = require('./project');
 const column = require('./column');
+const label = require('./label');
 
 router.use('/feed', feed);
 router.use('/report', report);
 router.use('/project', project);
 router.use('/column', column);
+router.use('/label', label);
 
 module.exports = router;

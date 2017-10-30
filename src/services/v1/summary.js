@@ -8,6 +8,7 @@ const Issue = require('../../models/v1/issue');
 const IssueEvent = require('../../models/v1/issue_event');
 const Summary = require('../../models/v1/summary');
 const RootCause = require('../../models/root_cause');
+const Label = require('../../models/v1/label');
 const AuthService = require('../../services/auth');
 const logger = require('../../config/logger');
 
@@ -147,6 +148,9 @@ const _buildCardSummary = async (cardEvent, summary = new Summary()) => {
   summary.card = await Card.findOne({ id: cardEvent.project_card.id }).exec() || summary.card;
   await _resolveColumnAndProject(summary, summary.card.column_url);
   summary.issue = await Issue.findOne({ url: summary.card.content_url }).exec() || summary.issue;
+  if (summary.issue) {
+    summary.issue.labels = await Promise.all(summary.issue.labels.map(label => _resolveReference(Label)('url', label.url)));
+  }
   summary.changes = summary.changes || [];
   summary.board_moves = summary.board_moves || [];
   summary.deliveries = summary.deliveries || [];
@@ -167,6 +171,9 @@ const _buildIssueSummary = async (issueEvent, summary = new Summary()) => {
     await _resolveColumnAndProject(summary, summary.card.column_url);
   }
   summary.issue = summary.issue || await Issue.findOne({ id: issueEvent.issue.id }).exec();
+  if (summary.issue) {
+    summary.issue.labels = await Promise.all(summary.issue.labels.map(label => _resolveReference(Label)('url', label.url)));
+  }
   summary.changes = summary.changes || [];
   summary.board_moves = summary.board_moves || [];
   summary.deliveries = summary.deliveries || [];
@@ -316,16 +323,7 @@ const SummaryService = {
    */
   summarize: async () => {
     if (summarizing) {
-      debug('already summarizing');
-      return new Promise((resolve, reject) => {
-        setTimeout(() => {
-          SummaryService.summarize()
-            .then(resolve)
-            .catch(reject);
-        }, 60 * 1000);
-
-        debug('summarization delayed to 1 minute from now');
-      });
+      return debug('already summarizing');
     }
 
     try {

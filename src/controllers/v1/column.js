@@ -28,7 +28,7 @@ const ColumnController = {
    * @return {Promise.<void>}
    */
   update: async (req, res, next) => {
-    debug('executing find action');
+    debug('executing update action');
 
     const { color, order, visible } = req.body;
 

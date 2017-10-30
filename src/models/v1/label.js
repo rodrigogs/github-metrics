@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const LabelSchema = require('./label');
+const LabelSchema = require('./schemas/label');
 
 const Label = mongoose.model('Label', LabelSchema);
 

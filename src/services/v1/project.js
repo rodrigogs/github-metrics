@@ -13,6 +13,15 @@ const ProjectService = {
     return Project.find().sort('name').exec();
   },
 
+  /**
+   * @return {Promise.<void>}
+   */
+  update: (id, ignoreLabels) => {
+    debug('updating projects');
+
+    return Project.update({ id }, { $set: { ignore_labels: ignoreLabels } });
+  },
+
 };
 
 module.exports = ProjectService;

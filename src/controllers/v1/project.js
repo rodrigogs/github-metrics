@@ -21,6 +21,27 @@ const ReportController = {
     }
   },
 
+  /**
+   * @param req
+   * @param res
+   * @param next
+   * @return {Promise.<void>}
+   */
+  update: async (req, res, next) => {
+    debug('executing update action');
+
+    let ignoreLabels = req.body;
+    if (typeof ignoreLabels === 'string') {
+      ignoreLabels = ignoreLabels.split(',');
+    }
+
+    try {
+      const project = await ProjectService.update(req.params.id, ignoreLabels);
+      res.status(200).send(project);
+    } catch (err) {
+      next(err);
+    }
+  },
 };
 
 module.exports = ReportController;

@@ -1,0 +1,19 @@
+#label_manager.modal.fade(tabindex='-1' role='dialog' aria-labelledby='label_manager_label' aria-hidden='true')
+  .modal-dialog(role='document')
+    .modal-content
+      .modal-header
+        h5#label_manager_label.modal-title Manage Labels
+        button.close(type='button' data-dismiss='modal' aria-label='Close')
+          span(aria-hidden='true') ×
+
+      .modal-body
+        table.table.table-responsive-md
+          thead
+            tr
+              th(scope='col') Name
+              th(scope='col') Ignore
+          tbody
+
+      .modal-footer
+        button#close_labels_modal.btn.btn-secondary(type='button' data-dismiss='modal') Close
+        button#save_labels.btn.btn-primary(type='button') Save changes

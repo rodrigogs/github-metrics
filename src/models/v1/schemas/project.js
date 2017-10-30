@@ -17,6 +17,7 @@ const ProjectSchema = new Schema({
   state: String,
   creator: UserSchema,
   deleted: Boolean,
+  ignore_labels: [Number],
   created_at: {
     type: Date,
     set: DateHelper.resolveGithubDate,

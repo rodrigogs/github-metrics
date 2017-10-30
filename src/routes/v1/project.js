@@ -10,4 +10,7 @@ const ProjectController = require('../../controllers/v1/project');
 router.route('/')
   .get(ProjectController.find);
 
+router.route('/:id')
+  .put(ProjectController.update);
+
 module.exports = router;
