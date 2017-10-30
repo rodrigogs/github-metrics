@@ -1,4 +1,4 @@
-const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Color, moment, _, App, Util) => {
+const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Color, moment, _, App) => {
   /* Charts */
   let cfdChart;
   let wipChart;
@@ -280,7 +280,7 @@ const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Co
   });
 
   const loadCfd = () => {
-    const rawData = Util.clone(report);
+    const rawData = $.extend(true, {}, report);
     const summaries = _(rawData)
       .map((summary) => {
         _.each(summary.board_moves, (move) => {
@@ -291,7 +291,7 @@ const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Co
           move.dayOfYear = date.dayOfYear();
           move.millis = date.valueOf();
           move.formatedDate = date.format('DD/MM/YYYY');
-          move.column = Util.clone(columns.find(c => c.id === move.to_column.id));
+          move.column = $.extend(true, {}, columns.find(c => c.id === move.to_column.id));
 
           delete move.from_column;
           delete move.to_column;
@@ -380,7 +380,7 @@ const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Co
   };
 
   const loadWip = () => {
-    const rawData = Util.clone(report);
+    const rawData = $.extend(true, {}, report);
     const summaries = _(rawData)
       .map((summary) => {
         _.each(summary.board_moves, (move) => {
@@ -391,7 +391,7 @@ const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Co
           move.dayOfYear = date.dayOfYear();
           move.millis = date.valueOf();
           move.formatedDate = date.format('DD/MM/YYYY');
-          move.column = Util.clone(columns.find(c => c.id === move.to_column.id));
+          move.column = $.extend(true, {}, columns.find(c => c.id === move.to_column.id));
 
           delete move.from_column;
           delete move.to_column;
@@ -597,6 +597,6 @@ const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Co
   return {
     init,
   };
-})(window, document, jQuery, Promise, toastr, Chart, randomColor, Color, moment, _, App, Util);
+})(window, document, jQuery, Promise, toastr, Chart, randomColor, Color, moment, _, App);
 
 $(document).ready(Dashboard.init);
