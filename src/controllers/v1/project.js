@@ -30,9 +30,10 @@ const ReportController = {
   update: async (req, res, next) => {
     debug('executing update action');
 
-    let ignoreLabels = req.body;
+    let ignoreLabels = req.body.ignore_labels;
     if (typeof ignoreLabels === 'string') {
       ignoreLabels = ignoreLabels.split(',');
+      ignoreLabels = ignoreLabels.map(Number);
     }
 
     try {
