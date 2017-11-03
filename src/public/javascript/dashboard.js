@@ -133,8 +133,9 @@ const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Co
 
       closeColumnsModalBtn.click();
 
-      await Promise.all(data.map(ColumnService.update));
+      await Promise.all(data.map(column => ColumnService.update(column.id, column)));
       await loadProjectColumns();
+      await loadReport();
       toastr.info('Columns successfully saved!');
     } catch (err) {
       toastr.error('Error saving columns');
@@ -269,7 +270,7 @@ const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Co
   };
 
   const loadReport = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
 
     const query = reportForm.serialize();
     disableControls();
@@ -319,7 +320,12 @@ const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Co
   };
 
   const initEventHandlers = () => {
-    projectSelect.on('change', () => loadProjectColumns() && populateLabels());
+    projectSelect.on('change', () => {
+      loadProjectColumns().then(loadReport).catch(console.error);
+      populateLabels();
+    });
+    fromDate.on('change', loadReport);
+    toDate.on('change', loadReport);
     loadBtn.on('click', loadReport);
     saveColumnsBtn.on('click', saveColumns);
     saveLabelsBtn.on('click', saveLabels);
