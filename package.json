@@ -26,7 +26,7 @@
     "debug": "^3.1.0",
     "dotenv": "^4.0.0",
     "exceljs": "^0.6.2",
-    "express": "5.0.0-alpha.2",
+    "express": "5.0.0-alpha.6",
     "express-fileupload": "^0.3.0",
     "express-session": "^1.15.6",
     "flash": "^1.1.0",
