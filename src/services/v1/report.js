@@ -12,11 +12,11 @@ const ReportService = {
   summaries: async (query) => {
     debug('fetching data for summary report');
 
-    const cached = await RedisProvider.safeGet(JSON.stringify(query));
-    if (cached) return JSON.parse(cached);
-
     query.from_date = moment(query.from_date || new Date(0), 'DD/MM/YYYY').startOf('day');
     query.to_date = moment(query.to_date || new Date(), 'DD/MM/YYYY').endOf('day');
+
+    const cached = await RedisProvider.safeGet(JSON.stringify(query));
+    if (cached) return JSON.parse(cached);
 
     const summaries = await Summary.find({
       'project.id': Number(query.project_id),
