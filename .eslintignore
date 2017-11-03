@@ -1,3 +1,7 @@
 
 /src/public/javascript/app.js
 /src/public/javascript/dashboard.js
+/src/public/javascript/services/project.js
+/src/public/javascript/services/column.js
+/src/public/javascript/services/report.js
+/src/public/javascript/services/label.js

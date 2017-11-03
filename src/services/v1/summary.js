@@ -11,6 +11,7 @@ const RootCause = require('../../models/root_cause');
 const Label = require('../../models/v1/label');
 const AuthService = require('../../services/auth');
 const logger = require('../../config/logger');
+const RedisProvider = require('../../providers/redis');
 
 /**
  * @param issue
@@ -61,6 +62,9 @@ const _resolveReference = Schema => async (field, url) => {
   const query = {};
   query[field] = url;
 
+  const cached = await RedisProvider.safeGet(JSON.stringify(query));
+  if (cached) return JSON.parse(cached);
+
   const old = await Schema.findOne(query);
   try {
     const request = await AuthService.buildGitHubRequest();
@@ -70,6 +74,9 @@ const _resolveReference = Schema => async (field, url) => {
     if (req.status !== 200) return old;
 
     await _saveOrUpdate(Schema)(old, ref);
+
+    RedisProvider.set(JSON.stringify(query), JSON.stringify(ref), 'EX', 60 * 5);
+
     return ref;
   } catch (ignore) {
     return old;
@@ -297,10 +304,10 @@ const _summarizeIssueEvent = async (issueEvent) => {
  * @return {Promise.<*>}
  * @private
  */
-const _getSummarizedCardEvents = async (processedDeliveries) => {
+const _summarizeCardEvents = async (processedDeliveries) => {
   const cardEvents = await CardEvent
     .find({ delivery: { $not: { $in: processedDeliveries } } }).exec();
-  return Promise.mapSeries(cardEvents, _summarizeCardEvent);
+  return Promise.each(cardEvents, _summarizeCardEvent);
 };
 
 /**
@@ -308,10 +315,10 @@ const _getSummarizedCardEvents = async (processedDeliveries) => {
  * @return {Promise.<*>}
  * @private
  */
-const _getSummarizedIssueEvents = async (processedDeliveries) => {
+const _summarizeIssueEvents = async (processedDeliveries) => {
   const issueEvents = await IssueEvent
     .find({ delivery: { $not: { $in: processedDeliveries } } }).exec();
-  return Promise.mapSeries(issueEvents, _summarizeIssueEvent);
+  return Promise.each(issueEvents, _summarizeIssueEvent);
 };
 
 let summarizing = false;
@@ -335,8 +342,8 @@ const SummaryService = {
         processedDeliveries.push(...summary.deliveries);
       });
 
-      await _getSummarizedCardEvents(processedDeliveries);
-      await _getSummarizedIssueEvents(processedDeliveries);
+      await _summarizeCardEvents(processedDeliveries);
+      await _summarizeIssueEvents(processedDeliveries);
     } catch (err) {
       throw err;
     } finally {

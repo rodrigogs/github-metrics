@@ -2,24 +2,7 @@ const debug = require('debug')('github-metrics:services:v1:report');
 const moment = require('moment');
 
 const Summary = require('../../models/v1/summary');
-// const Project = require('../../models/v1/project');
-// const Card = require('../../models/v1/card');
-// const Column = require('../../models/v1/column');
-const Issue = require('../../models/v1/issue');
-// const CardEvent = require('../../models/v1/card_event');
-// const ColumnEvent = require('../../models/v1/column_event');
-// const ProjectEvent = require('../../models/v1/project_event');
-// const IssueEvent = require('../../models/v1/issue_event');
-// const AuthService = require('../auth');
-// const RedisProvider = require('../../providers/redis');
-// const logger = require('../../config/logger');
-
-const _process = async (summary) => {
-  if (summary.issue) {
-    summary.issue = await Issue.findOne({ id: summary.issue.id }).exec();
-  }
-  return summary;
-};
+const RedisProvider = require('../../providers/redis');
 
 const ReportService = {
 
@@ -28,6 +11,9 @@ const ReportService = {
    */
   summaries: async (query) => {
     debug('fetching data for summary report');
+
+    const cached = await RedisProvider.safeGet(JSON.stringify(query));
+    if (cached) return JSON.parse(cached);
 
     query.from_date = moment(query.from_date || new Date(0), 'DD/MM/YYYY').startOf('day');
     query.to_date = moment(query.to_date || new Date(), 'DD/MM/YYYY').endOf('day');
@@ -52,7 +38,9 @@ const ReportService = {
       });
     });
 
-    return Promise.mapSeries(summaries, _process);
+    RedisProvider.set(JSON.stringify(query), JSON.stringify(summaries), 'EX', 60 * 5);
+
+    return summaries;
   },
 
 };

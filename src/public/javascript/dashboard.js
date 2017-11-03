@@ -1,4 +1,4 @@
-const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Color, moment, _, App) => {
+const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Color, moment, _, App, ProjectService, ColumnService, ReportService, LabelService) => {
   /* Charts */
   let cfdChart;
   let wipChart;
@@ -110,17 +110,6 @@ const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Co
     });
   };
 
-  const saveColumn = (column) => new Promise((resolve, reject) => {
-    $.ajax({
-      method: 'PUT',
-      url: App.getBaseUrl(`/api/v1/column/${column.id}`),
-      data: column,
-      dataType: 'json',
-      success: resolve,
-      error: reject,
-    });
-  });
-
   const saveColumns = async () => {
     disableControls();
 
@@ -144,7 +133,7 @@ const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Co
 
       closeColumnsModalBtn.click();
 
-      await Promise.all(data.map(saveColumn));
+      await Promise.all(data.map(ColumnService.update));
       await loadProjectColumns();
       toastr.info('Columns successfully saved!');
     } catch (err) {
@@ -180,17 +169,7 @@ const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Co
 
       closeLabelsModalBtn.click();
 
-      await new Promise((resolve, reject) => {
-        $.ajax({
-          method: 'PUT',
-          url: App.getBaseUrl(`/api/v1/project/${currentProject.id}`),
-          data: { ignore_labels: data.join(',') },
-          dataType: 'json',
-          success: resolve,
-          error: reject,
-        });
-      });
-
+      await ProjectService.update(currentProject.id, { ignore_labels: data.join(',') });
       currentProject.ignore_labels = data;
 
       populateLabels();
@@ -203,37 +182,35 @@ const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Co
     }
   };
 
-  const loadProjectColumns = () => new Promise((resolve, reject) => {
+  const loadProjectColumns = async () => {
     disableControls();
 
     const projectId = projectSelect.find(':selected').val();
 
-    $.ajax({
-      url: App.getBaseUrl(`/api/v1/column?project.id=${projectId}`),
-      dataType: 'json',
-      success: (data) => {
-        populateProjectColumns(data);
-        resolve(data);
-      },
-      error: reject,
-      complete: enableControls,
-    });
-  });
+    try {
+      const data = await ColumnService.listForProject(projectId);
+      populateProjectColumns(data);
+    } catch (err) {
+      toastr.error('Error retrieving columns for project');
+      console.error(err);
+    } finally {
+      enableControls();
+    }
+  };
 
-  const loadProjects = () => new Promise((resolve, reject) => {
+  const loadProjects = async () => {
     disableControls();
 
-    $.ajax({
-      url: App.getBaseUrl('/api/v1/project/'),
-      dataType: 'json',
-      success: (data) => {
-        populateProjects(data);
-        resolve(data);
-      },
-      error: reject,
-      complete: enableControls,
-    });
-  });
+    try {
+      const data = await ProjectService.list();
+      populateProjects(data);
+    } catch (err) {
+      toastr.error('Error retrieving projects');
+      console.error(err);
+    } finally {
+      enableControls();
+    }
+  };
 
   const populateLabels = (payload) => {
     labels = payload || labels;
@@ -264,214 +241,30 @@ const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Co
       .forEach((column => modalBody.append(column)));
   };
 
-  const loadLabels = () => new Promise((resolve, reject) => {
+  const loadLabels = async () => {
     disableControls();
 
-    $.ajax({
-      url: App.getBaseUrl('/api/v1/label/'),
-      dataType: 'json',
-      success: (data) => {
-        populateLabels(data);
-        resolve(data);
-      },
-      error: reject,
-      complete: enableControls,
-    });
-  });
-
-  const loadCfd = () => {
-    const rawData = $.extend(true, {}, report);
-    const summaries = _(rawData)
-      .map((summary) => {
-        _.each(summary.board_moves, (move) => {
-          const date = moment.utc(move.when);
-          move.day = date.date();
-          move.month = date.month() + 1;
-          move.year = date.year();
-          move.dayOfYear = date.dayOfYear();
-          move.millis = date.valueOf();
-          move.formatedDate = date.format('DD/MM/YYYY');
-          move.column = $.extend(true, {}, columns.find(c => c.id === move.to_column.id));
-
-          delete move.from_column;
-          delete move.to_column;
-        });
-
-        _.groupBy(summary.board_moves, 'dayOfYear');
-
-        return summary;
-      })
-      .filter((summary) => {
-        const ignoreLabels = getCurrentProject().ignore_labels;
-        const { issue } = summary;
-        if (!issue) return true;
-
-        return !issue.labels.filter((label) => {
-          return ignoreLabels.indexOf(label.id) !== -1;
-        }).length;
-      })
-      .value();
-
-    const labels = _(summaries)
-      .map('board_moves')
-      .flatten()
-      .sortBy('millis')
-      .map('formatedDate')
-      .uniq()
-      .value();
-
-    const datasets = _(summaries)
-      .map((summ) => {
-        summ.board_moves.forEach((move) => {
-          move.issue = summ.issue.number;
-        });
-        return summ.board_moves;
-      })
-      .flatten()
-      .sortBy('millis')
-      .groupBy('column.order')
-      .map((order) => { // Group columns by order
-        const uniqueColumns = _.uniqBy(order, 'column.id');
-        if (uniqueColumns.length === 1) return order;
-
-        const name = _.map(uniqueColumns, 'column.name').join(' / ');
-        return _.map(order, (col) => {
-          col.column.id = `composit-id-${name}${col.column.order}`;
-          col.column.name = name;
-          return col;
-        });
-      })
-      .flatten()
-      .groupBy('column.id')
-      .map((col) => {
-        const column = (col[0] || {}).column || {};
-        column.color = column.color || randomColor();
-        column.order = column.order || 0;
-
-        col = _.uniqBy(col, column => column.issue + column.formatedDate);
-
-        let total = 0;
-        const data = _.map(labels, (date) => {
-          total += _.filter(col, ['formatedDate', date]).length;
-          return total;
-        });
-
-        return {
-          data,
-          order: column.order,
-          visible: column.visible,
-          label: column.name,
-          borderColor: column.color,
-          backgroundColor: Color(column.color).alpha(0.3).rgbString(),
-        }
-      })
-      .filter('visible')
-      .sortBy('order')
-      .value();
-
-    cfdChart.data = {
-      labels,
-      datasets,
-    };
-    cfdChart.update();
+    try {
+      const data = await LabelService.list();
+      populateLabels(data);
+    } catch (err) {
+      toastr.error('Error retrieving labels');
+      console.error(err);
+    } finally {
+      enableControls();
+    }
   };
 
   const loadLeadTime = () => {
   };
 
+  const loadCfd = () => {
+    cfdChart.data = ReportService.getCfdData(report, getCurrentProject(), columns);
+    cfdChart.update();
+  };
+
   const loadWip = () => {
-    const rawData = $.extend(true, {}, report);
-    const summaries = _(rawData)
-      .map((summary) => {
-        _.each(summary.board_moves, (move) => {
-          const date = moment.utc(move.when);
-          move.day = date.date();
-          move.month = date.month() + 1;
-          move.year = date.year();
-          move.dayOfYear = date.dayOfYear();
-          move.millis = date.valueOf();
-          move.formatedDate = date.format('DD/MM/YYYY');
-          move.column = $.extend(true, {}, columns.find(c => c.id === move.to_column.id));
-
-          delete move.from_column;
-          delete move.to_column;
-        });
-
-        const distinctDays = _.groupBy(summary.board_moves, 'dayOfYear');
-        summary.board_moves = _.map(distinctDays, day => _.maxBy(day, 'millis'));
-
-        return summary;
-      })
-      .filter((summary) => {
-        const ignoreLabels = getCurrentProject().ignore_labels;
-        const { issue } = summary;
-        if (!issue) return true;
-
-        return !issue.labels.filter((label) => {
-          return ignoreLabels.indexOf(label.id) !== -1;
-        }).length;
-      })
-      .value();
-
-    const labels = _(summaries)
-      .map('board_moves')
-      .flatten()
-      .sortBy('millis')
-      .map('formatedDate')
-      .uniq()
-      .value();
-
-    const datasets = _(summaries)
-      .map((summ) => {
-        summ.board_moves.forEach((move) => {
-          move.issue = summ.issue.number;
-        });
-        return summ.board_moves;
-      })
-      .flatten()
-      .sortBy('millis')
-      .groupBy('column.order')
-      .map((order) => { // Group columns by order
-        const uniqueColumns = _.uniqBy(order, 'column.id');
-        if (uniqueColumns.length === 1) return order;
-
-        const name = _.map(uniqueColumns, 'column.name').join(' / ');
-        return _.map(order, (col) => {
-          col.column.id = `composit-id-${name}${col.column.order}`;
-          col.column.name = name;
-          return col;
-        });
-      })
-      .flatten()
-      .groupBy('column.id')
-      .map((col) => {
-        const column = (col[0] || {}).column || {};
-        column.color = column.color || randomColor();
-        column.order = column.order || 0;
-
-        col = _.uniqBy(col, column => column.issue + column.formatedDate);
-
-        const data = _.map(labels, (date) => {
-          return _.filter(col, ['formatedDate', date]).length;
-        });
-
-        return {
-          data,
-          order: column.order,
-          visible: column.visible,
-          label: column.name,
-          borderColor: column.color,
-          backgroundColor: Color(column.color).alpha(0.3).rgbString(),
-        }
-      })
-      .filter('visible')
-      .sortBy('order')
-      .value();
-
-    wipChart.data = {
-      labels,
-      datasets,
-    };
+    wipChart.data = ReportService.getWipData(report, getCurrentProject(), columns);
     wipChart.update();
   };
 
@@ -482,7 +275,7 @@ const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Co
     disableControls();
 
     try {
-      report = await getReportData(query);
+      report = await ReportService.summary(query);
 
       if (cfdCard.closest('.card').find('.collapse').hasClass('show')) {
         loadCfd();
@@ -502,16 +295,6 @@ const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Co
       enableControls();
     }
   };
-
-  const getReportData = (query) => new Promise((resolve, reject) => {
-    $.ajax({
-      method: 'GET',
-      url: App.getBaseUrl(`/api/v1/report/summary?${query}`),
-      dataType: 'json',
-      success: resolve,
-      error: reject,
-    });
-  });
 
   const initElements = () => {
     reportForm = $('form#report_form');
@@ -597,6 +380,6 @@ const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Co
   return {
     init,
   };
-})(window, document, jQuery, Promise, toastr, Chart, randomColor, Color, moment, _, App);
+})(window, document, jQuery, Promise, toastr, Chart, randomColor, Color, moment, _, App, ProjectService, ColumnService, ReportService, LabelService);
 
 $(document).ready(Dashboard.init);
