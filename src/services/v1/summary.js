@@ -63,7 +63,7 @@ const _resolveReference = Schema => async (field, url) => {
   query[field] = url;
 
   const cached = await RedisProvider.safeGet(JSON.stringify(query));
-  if (cached) return JSON.parse(cached);
+  if (cached) return new Schema(JSON.parse(cached));
 
   const old = await Schema.findOne(query);
   try {
@@ -75,12 +75,12 @@ const _resolveReference = Schema => async (field, url) => {
 
     await _saveOrUpdate(Schema)(old, ref);
 
-    RedisProvider.set(JSON.stringify(query), JSON.stringify(ref), 'EX', 60 * 5);
-
-    return ref;
-  } catch (ignore) {
-    return old;
+    RedisProvider.set(JSON.stringify(query), JSON.stringify(old), 'EX', 60 * 5);
+  } catch (err) {
+    debug('error fetching data for', Schema.modelName, err.message);
   }
+
+  return old;
 };
 
 /**
