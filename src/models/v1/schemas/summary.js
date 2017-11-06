@@ -31,10 +31,8 @@ const SummarySchema = new Schema({
     event: String,
     issue_event: IssueEventSchema,
     card_event: CardEventSchema,
-    issue_before: IssueSchema,
-    issue_after: IssueSchema,
-    card_before: CardSchema,
-    card_after: CardSchema,
+    issue_snapshot: IssueSchema,
+    card_snapshot: CardSchema,
     when: Date,
   }],
   board_moves: [{

@@ -83,54 +83,6 @@ const _resolveReference = Schema => async (field, url) => {
   return old;
 };
 
-/**
- * @param summary
- * @param cardEvent
- * @return {Promise.<void>}
- * @private
- */
-const _mergeCardSummary = async (summary, cardEvent) => {
-  if (!cardEvent.issue && !cardEvent.project_card.issue) return summary;
-
-  const issueId = cardEvent.issue ? cardEvent.issue.id : cardEvent.project_card.issue.id;
-  const issueSummary = await Summary
-    .findOne({ 'issue.id': issueId }).exec();
-
-  if (!issueSummary) return summary;
-  if (issueSummary._id.toString() === summary._id.toString()) return summary;
-
-  await Summary.remove({ _id: issueSummary._id });
-
-  summary.issue = issueSummary.issue;
-  summary.root_causes = issueSummary.root_causes;
-  summary.custom_statuses = issueSummary.custom_statuses;
-  summary.changes.push(...issueSummary.changes);
-  summary.deliveries.push(...issueSummary.deliveries);
-  summary.generated_at = cardEvent.project_card.updated_at;
-  return summary;
-};
-
-/**
- * @param summary
- * @param issueEvent
- * @return {Promise.<void>}
- * @private
- */
-const _mergeIssueSummary = async (summary, issueEvent) => {
-  const cardSummary = await Summary.findOne({ 'card.issue.id': issueEvent.issue.id }).exec();
-  if (!cardSummary) return summary;
-  if (cardSummary._id.toString() === summary._id.toString()) return summary;
-
-  await Summary.remove({ _id: cardSummary._id });
-
-  summary.project = cardSummary.project;
-  summary.card = cardSummary.card;
-  summary.changes.push(...cardSummary.changes);
-  summary.deliveries.push(...cardSummary.deliveries);
-  summary.generated_at = issueEvent.issue.updated_at;
-  return summary;
-};
-
 const _resolveColumnAndProject = async (summary, columnUrl) => {
   summary.card.column = await _resolveReference(Column)('url', columnUrl);
   if (!summary.card.column) {
@@ -161,30 +113,42 @@ const _buildCardSummary = async (cardEvent, summary = new Summary()) => {
   summary.changes = summary.changes || [];
   summary.board_moves = summary.board_moves || [];
   summary.deliveries = summary.deliveries || [];
+
   return summary;
 };
 
 /**
  * @param issueEvent
- * @param summary
- * @return {Promise.<void>}
  * @private
  */
-const _buildIssueSummary = async (issueEvent, summary = new Summary()) => {
-  debug('building summary for issue', issueEvent.issue.id);
+const _buildIssueSummaryForCard = issueEvent => async (card) => {
+  const summary = await Summary.findOne({ 'card.id': card.id }).exec() || new Summary();
 
-  summary.card = await Card.findOne({ 'issue.id': issueEvent.issue.id }).exec() || summary.card;
-  if (summary.card) {
-    await _resolveColumnAndProject(summary, summary.card.column_url);
-  }
-  summary.issue = summary.issue || await Issue.findOne({ id: issueEvent.issue.id }).exec();
+  summary.card = card;
+  await _resolveColumnAndProject(summary, summary.card.column_url);
+  if (!summary.issue) summary.issue = await Issue.findOne({ id: issueEvent.issue.id }).exec();
   if (summary.issue) {
     summary.issue.labels = await Promise.all(summary.issue.labels.map(label => _resolveReference(Label)('url', label.url)));
   }
-  summary.changes = summary.changes || [];
-  summary.board_moves = summary.board_moves || [];
-  summary.deliveries = summary.deliveries || [];
+  if (!summary.changes) summary.changes = [];
+  if (!summary.board_moves) summary.board_moves = [];
+  if (!summary.deliveries) summary.deliveries = [];
+
   return summary;
+};
+
+/**
+ * @param issueEvent
+ * @return {Promise.<Array>}
+ * @private
+ */
+const _buildIssueSummaries = async (issueEvent) => {
+  debug('building summaries for issue', issueEvent.issue.id);
+
+  const cards = await Card.find({ content_url: issueEvent.issue.url }).exec();
+  if (!cards.length) return [];
+
+  return Promise.mapSeries(cards, _buildIssueSummaryForCard(issueEvent));
 };
 
 /**
@@ -195,26 +159,14 @@ const _buildIssueSummary = async (issueEvent, summary = new Summary()) => {
 const _summarizeCardEvent = async (cardEvent) => {
   debug('summarizing event for card', cardEvent.project_card.id);
 
-  let summary;
-  if (cardEvent.project_card.issue) {
-    summary = await Summary.findOne({ 'issue.id': cardEvent.project_card.issue.id }).exec();
-  } else {
-    summary = await Summary.findOne({ 'card.id': cardEvent.project_card.id }).exec();
-  }
+  let summary = await Summary.findOne({ 'card.id': cardEvent.project_card.id }).exec();
   summary = await _buildCardSummary(cardEvent, summary || undefined);
-
-  summary.changes.sort((a, b) => {
-    return a.when.getTime() - b.when.getTime();
-  });
-
-  const lastChange = summary.changes[summary.changes.length - 1] || {};
 
   summary.changes.push({
     origin: 'card',
     event: cardEvent.action,
     card_event: cardEvent,
-    card_before: lastChange.card_after,
-    card_after: cardEvent.project_card,
+    card_snapshot: cardEvent.project_card,
     when: cardEvent.project_card.updated_at,
   });
 
@@ -232,34 +184,15 @@ const _summarizeCardEvent = async (cardEvent) => {
 
   summary.deliveries.push(cardEvent.delivery);
 
-  summary = await _mergeCardSummary(summary, cardEvent);
   await summary.save();
-  return summary;
 };
 
 /**
  * @param issueEvent
- * @return {Promise.<string>}
+ * @return {Promise.<void>}
  * @private
  */
-const _summarizeIssueEvent = async (issueEvent) => {
-  debug('summarizing event for issue', issueEvent.issue.id);
-
-  const card = await Card.findOne({ 'issue.id': issueEvent.issue.id }).exec();
-
-  let summary;
-  if (card) summary = await Summary.findOne({ 'card.id': card.id }).exec();
-  if (!summary) {
-    summary = await Summary.findOne({
-      $or: [
-        { 'issue.id': issueEvent.issue.id },
-        { 'project_card.issue.id': issueEvent.issue.id },
-      ],
-    }).exec();
-  }
-
-  summary = await _buildIssueSummary(issueEvent, summary || undefined);
-
+const _processSummaryForIssue = issueEvent => async (summary) => {
   const rootCauses = _findRootCauses(summary.issue);
   const customStatuses = _findCustomStatuses(summary.issue);
 
@@ -277,27 +210,46 @@ const _summarizeIssueEvent = async (issueEvent) => {
     });
   }
 
-  summary.changes.sort((a, b) => {
-    return a.when.getTime() - b.when.getTime();
-  });
-
-  const lastChange = summary.changes[summary.changes.length - 1] || {};
-
   summary.changes.push({
     origin: 'issue',
     event: issueEvent.action,
     issue_event: issueEvent,
-    issue_before: lastChange.issue_after,
-    issue_after: issueEvent.issue,
+    issue_snapshot: issueEvent.issue,
     when: issueEvent.issue.updated_at,
   });
 
   summary.deliveries.push(issueEvent.delivery);
 
-  summary = await _mergeIssueSummary(summary, issueEvent);
-  await summary.save();
-  return summary;
+  await (new Summary(summary, { versionKey: false })).save();
 };
+
+/**
+ * @param issueEvent
+ * @return {Promise.<string>}
+ * @private
+ */
+const _summarizeIssueEvent = async (issueEvent) => {
+  debug('summarizing event for issue', issueEvent.issue.id);
+
+  const summaries = await _buildIssueSummaries(issueEvent);
+  await Promise.each(summaries, _processSummaryForIssue(issueEvent));
+};
+
+const runGCIfNeeded = (() => {
+  let i = 0;
+  return function runGCIfNeeded() {
+    // eslint-disable-next-line
+    if (i++ > 200) {
+      i = 0;
+
+      if (global.gc) {
+        global.gc();
+      } else {
+        logger.warn('Garbage collection unavailable. Pass --expose-gc when launching node to enable forced garbage collection.');
+      }
+    }
+  };
+})();
 
 /**
  * @param processedDeliveries
@@ -307,7 +259,17 @@ const _summarizeIssueEvent = async (issueEvent) => {
 const _summarizeCardEvents = async (processedDeliveries) => {
   const cardEvents = await CardEvent
     .find({ delivery: { $not: { $in: processedDeliveries } } }).exec();
-  return Promise.each(cardEvents, _summarizeCardEvent);
+
+  let cardsTodo = cardEvents.length;
+
+  return Promise.each(cardEvents, async (event, index) => {
+    await _summarizeCardEvent(event);
+    cardEvents[index] = null;
+    runGCIfNeeded();
+    cardsTodo -= 1;
+
+    debug(cardsTodo, 'card events to process');
+  });
 };
 
 /**
@@ -318,7 +280,17 @@ const _summarizeCardEvents = async (processedDeliveries) => {
 const _summarizeIssueEvents = async (processedDeliveries) => {
   const issueEvents = await IssueEvent
     .find({ delivery: { $not: { $in: processedDeliveries } } }).exec();
-  return Promise.each(issueEvents, _summarizeIssueEvent);
+
+  let issuesTodo = issueEvents.length;
+
+  return Promise.each(issueEvents, async (event, index) => {
+    await _summarizeIssueEvent(event);
+    issueEvents[index] = null;
+    runGCIfNeeded();
+    issuesTodo -= 1;
+
+    debug(issuesTodo, 'issue events to process');
+  });
 };
 
 let summarizing = false;

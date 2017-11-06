@@ -1,5 +1,9 @@
 const ReportService = (($, _, App) => ({
 
+  /**
+   * @param query
+   * @return Promise
+   */
   summary: (query) => new Promise((resolve, reject) => {
     $.ajax({
       method: 'GET',
@@ -10,6 +14,12 @@ const ReportService = (($, _, App) => ({
     });
   }),
 
+  /**
+   * @param data
+   * @param project
+   * @param columns
+   * @return {{labels, datasets}}
+   */
   getCfdData: (data, project, columns) => {
     const rawData = $.extend(true, {}, data);
     const summaries = _(rawData)
@@ -22,11 +32,13 @@ const ReportService = (($, _, App) => ({
           move.dayOfYear = date.dayOfYear();
           move.millis = date.valueOf();
           move.formatedDate = date.format('DD/MM/YYYY');
-          move.column = $.extend(true, {}, columns.find(c => c.id === move.to_column.id));
+
+          move.column = columns.find(c => c.id === move.to_column.id || c.name === move.to_column.name);
 
           delete move.from_column;
           delete move.to_column;
         });
+        summary.board_moves = _.filter(summary.board_moves, move => !!move.column);
 
         _.groupBy(summary.board_moves, 'dayOfYear');
 
@@ -90,7 +102,7 @@ const ReportService = (($, _, App) => ({
         return {
           data,
           order: column.order,
-          visible: column.visible,
+          visible: true,
           label: column.name,
           borderColor: column.color,
           backgroundColor: Color(column.color).alpha(0.3).rgbString(),
@@ -106,6 +118,12 @@ const ReportService = (($, _, App) => ({
     };
   },
 
+  /**
+   * @param data
+   * @param project
+   * @param columns
+   * @return {{labels, datasets}}
+   */
   getWipData: (data, project, columns) => {
     const rawData = $.extend(true, {}, data);
     const summaries = _(rawData)

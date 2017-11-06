@@ -1,5 +1,8 @@
 const ProjectService = (($, App) => ({
 
+  /**
+   * @return Promise
+   */
   list: () => new Promise((resolve, reject) => {
     $.ajax({
       method: 'GET',
@@ -10,6 +13,11 @@ const ProjectService = (($, App) => ({
     });
   }),
 
+  /**
+   * @param projectId
+   * @param data
+   * @return Promise
+   */
   update: (projectId, data) => new Promise((resolve, reject) => {
     $.ajax({
       method: 'PUT',

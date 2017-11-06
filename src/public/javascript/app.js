@@ -1,13 +1,22 @@
 const App = ((window, document, $) => ({
 
+  /**
+   *
+   */
   startLoader: () => {
     $('.progress.default-loader').show();
   },
 
+  /**
+   *
+   */
   stopLoader: () => {
     $('.progress.default-loader').hide();
   },
 
+  /**
+   *
+   */
   configure: () => {
     $.ajaxSetup({
       global: true,
@@ -22,6 +31,10 @@ const App = ((window, document, $) => ({
     $('.color-picker').spectrum();
   },
 
+  /**
+   * @param [path='']
+   * @return {string}
+   */
   getBaseUrl: (path = '') => {
     const baseUrl = $('base#base-url').attr('href');
     if (!path.startsWith('/')) path = `/${path}`;

@@ -10,7 +10,7 @@ const ProjectService = {
   find: () => {
     debug('fetching projects');
 
-    return Project.find().sort('name').exec();
+    return Project.find({ deleted: { $not: true } }).sort('name').exec();
   },
 
   /**

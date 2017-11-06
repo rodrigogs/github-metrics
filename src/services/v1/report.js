@@ -26,6 +26,7 @@ const ReportService = {
         $gte: query.from_date.toDate(),
         $lte: query.to_date.toDate(),
       },
+      'card.deleted': { $ne: true },
     }, {
       issue: 1,
       board_moves: 1,

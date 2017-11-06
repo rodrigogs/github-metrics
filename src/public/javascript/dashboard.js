@@ -30,6 +30,9 @@ const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Co
   let labels;
   let report;
 
+  /**
+   *
+   */
   const disableControls = () => {
     projectSelect.attr('disabled', 'disabled');
     columnsModalBtn.attr('disabled', 'disabled');
@@ -41,6 +44,9 @@ const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Co
     loadBtn.attr('disabled', 'disabled');
   };
 
+  /**
+   *
+   */
   const enableControls = () => {
     projectSelect.removeAttr('disabled');
     columnsModalBtn.removeAttr('disabled');
@@ -52,6 +58,9 @@ const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Co
     loadBtn.removeAttr('disabled');
   };
 
+  /**
+   * @param payload
+   */
   const populateProjects = (payload) => {
     projects = payload;
 
@@ -66,11 +75,17 @@ const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Co
     loadProjectColumns();
   };
 
+  /**
+   *
+   */
   const getCurrentProject = () => {
     const currentProjectId = projectSelect.find(':selected').val();
     return projects.find(project => Number(project.id) === Number(currentProjectId));
   };
 
+  /**
+   * @param payload
+   */
   const populateProjectColumns = (payload) => {
     columns = payload || columns;
 
@@ -110,6 +125,9 @@ const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Co
     });
   };
 
+  /**
+   * @return {Promise.<void>}
+   */
   const saveColumns = async () => {
     disableControls();
 
@@ -145,6 +163,9 @@ const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Co
     }
   };
 
+  /**
+   * @return {Promise.<void>}
+   */
   const saveLabels = async () => {
     disableControls();
 
@@ -183,6 +204,9 @@ const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Co
     }
   };
 
+  /**
+   * @return {Promise.<void>}
+   */
   const loadProjectColumns = async () => {
     disableControls();
 
@@ -199,6 +223,9 @@ const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Co
     }
   };
 
+  /**
+   * @return {Promise.<void>}
+   */
   const loadProjects = async () => {
     disableControls();
 
@@ -213,6 +240,9 @@ const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Co
     }
   };
 
+  /**
+   * @param payload
+   */
   const populateLabels = (payload) => {
     labels = payload || labels;
 
@@ -242,6 +272,9 @@ const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Co
       .forEach((column => modalBody.append(column)));
   };
 
+  /**
+   * @return {Promise.<void>}
+   */
   const loadLabels = async () => {
     disableControls();
 
@@ -256,19 +289,32 @@ const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Co
     }
   };
 
+  /**
+   *
+   */
   const loadLeadTime = () => {
   };
 
+  /**
+   *
+   */
   const loadCfd = () => {
     cfdChart.data = ReportService.getCfdData(report, getCurrentProject(), columns);
     cfdChart.update();
   };
 
+  /**
+   *
+   */
   const loadWip = () => {
     wipChart.data = ReportService.getWipData(report, getCurrentProject(), columns);
     wipChart.update();
   };
 
+  /**
+   * @param e
+   * @return {Promise.<void>}
+   */
   const loadReport = async (e) => {
     if (e) e.preventDefault();
 
@@ -297,6 +343,9 @@ const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Co
     }
   };
 
+  /**
+   *
+   */
   const initElements = () => {
     reportForm = $('form#report_form');
     projectSelect = $('select#project_id');
@@ -319,6 +368,9 @@ const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Co
     wipCanvas = $('canvas#wip');
   };
 
+  /**
+   *
+   */
   const initEventHandlers = () => {
     projectSelect.on('change', () => {
       loadProjectColumns().then(loadReport).catch(console.error);
@@ -334,6 +386,9 @@ const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Co
     wipCard.on('click', loadWip);
   };
 
+  /**
+   *
+   */
   const initCharts = () => {
     cfdChart = new Chart(cfdCanvas[0], {
       type: 'line',
@@ -376,6 +431,9 @@ const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Co
     });
   };
 
+  /**
+   *
+   */
   const init = () => {
     initElements();
     initEventHandlers();

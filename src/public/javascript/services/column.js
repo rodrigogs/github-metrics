@@ -1,5 +1,9 @@
 const ColumnService = (($, App) => ({
 
+  /**
+   * @param projectId
+   * @return Promise
+   */
   listForProject: (projectId) => new Promise((resolve, reject) => {
     $.ajax({
       url: App.getBaseUrl(`/api/v1/column?project.id=${projectId}`),
@@ -9,6 +13,11 @@ const ColumnService = (($, App) => ({
     });
   }),
 
+  /**
+   * @param id
+   * @param data
+   * @return Promise
+   */
   update: (id, data) => new Promise((resolve, reject) => {
     $.ajax({
       method: 'PUT',
