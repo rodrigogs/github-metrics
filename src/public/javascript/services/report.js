@@ -18,9 +18,11 @@ const ReportService = (($, _, App) => ({
    * @param data
    * @param project
    * @param columns
+   * @param from
+   * @param to
    * @return {{labels, datasets}}
    */
-  getCfdData: (data, project, columns) => {
+  getCfdData: (data, project, columns, from, to) => {
     const rawData = $.extend(true, {}, data);
     const summaries = _(rawData)
       .map((summary) => {
@@ -58,13 +60,16 @@ const ReportService = (($, _, App) => ({
       })
       .value();
 
-    const labels = _(summaries)
+    let labels = [from, ..._(summaries)
       .map('board_moves')
       .flatten()
       .sortBy('millis')
       .map('formatedDate')
-      .uniq()
-      .value();
+      .value(), to];
+
+    labels = _.uniq(labels);
+
+    console.log(labels)
 
     const datasets = _(summaries)
       .map((summ) => {

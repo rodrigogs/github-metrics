@@ -299,7 +299,7 @@ const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Co
    *
    */
   const loadCfd = () => {
-    cfdChart.data = ReportService.getCfdData(report, getCurrentProject(), columns);
+    cfdChart.data = ReportService.getCfdData(report, getCurrentProject(), columns, fromDate.val(), toDate.val());
     cfdChart.update();
   };
 
