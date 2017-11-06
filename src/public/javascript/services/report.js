@@ -33,7 +33,10 @@ const ReportService = (($, _, App) => ({
           move.millis = date.valueOf();
           move.formatedDate = date.format('DD/MM/YYYY');
 
-          move.column = columns.find(c => c.id === move.to_column.id || c.name === move.to_column.name);
+          const column = columns.find(c => c.id === move.to_column.id || c.name === move.to_column.name);
+          if (column) {
+            move.column = $.extend(true, {}, column);
+          }
 
           delete move.from_column;
           delete move.to_column;
