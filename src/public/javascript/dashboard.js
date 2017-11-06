@@ -394,6 +394,11 @@ const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Co
       type: 'line',
       options: {
         responsive: true,
+        elements: {
+          line: {
+            tension: 0,
+          },
+        },
         scales: {
           xAxes: [{
             scaleLabel: {
