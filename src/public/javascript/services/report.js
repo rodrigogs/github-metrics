@@ -198,7 +198,6 @@ const ReportService = (($, _, App) => ({
       })
       .filter('visible')
       .sortBy('order')
-      .reverse()
       .value();
 
     return {
