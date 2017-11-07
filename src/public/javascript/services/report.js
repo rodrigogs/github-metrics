@@ -18,13 +18,12 @@ const ReportService = (($, _, App) => ({
    * @param data
    * @param project
    * @param columns
-   * @param from
-   * @param to
-   * @return {{labels, datasets}}
+   * @private
+   * @return {object}
    */
-  getCfdData: (data, project, columns, from, to) => {
+  _normalizeData: (data, project, columns) => {
     const rawData = $.extend(true, {}, data);
-    const summaries = _(rawData)
+    return _(rawData)
       .map((summary) => {
         _.each(summary.board_moves, (move) => {
           const date = moment.utc(move.when);
@@ -59,6 +58,18 @@ const ReportService = (($, _, App) => ({
         }).length;
       })
       .value();
+  },
+
+  /**
+   * @param data
+   * @param project
+   * @param columns
+   * @param from
+   * @param to
+   * @return {{labels, datasets}}
+   */
+  getCfdData: (data, project, columns, from, to) => {
+    const summaries = ReportService._normalizeData(data, project, columns);
 
     let labels = [from, ..._(summaries)
       .map('board_moves')
@@ -68,8 +79,6 @@ const ReportService = (($, _, App) => ({
       .value(), to];
 
     labels = _.uniq(labels);
-
-    console.log(labels)
 
     const datasets = _(summaries)
       .map((summ) => {
@@ -118,6 +127,7 @@ const ReportService = (($, _, App) => ({
       })
       .filter('visible')
       .sortBy('order')
+      .reverse()
       .value();
 
     return {
@@ -133,38 +143,7 @@ const ReportService = (($, _, App) => ({
    * @return {{labels, datasets}}
    */
   getWipData: (data, project, columns) => {
-    const rawData = $.extend(true, {}, data);
-    const summaries = _(rawData)
-      .map((summary) => {
-        _.each(summary.board_moves, (move) => {
-          const date = moment.utc(move.when);
-          move.day = date.date();
-          move.month = date.month() + 1;
-          move.year = date.year();
-          move.dayOfYear = date.dayOfYear();
-          move.millis = date.valueOf();
-          move.formatedDate = date.format('DD/MM/YYYY');
-          move.column = $.extend(true, {}, columns.find(c => c.id === move.to_column.id));
-
-          delete move.from_column;
-          delete move.to_column;
-        });
-
-        const distinctDays = _.groupBy(summary.board_moves, 'dayOfYear');
-        summary.board_moves = _.map(distinctDays, day => _.maxBy(day, 'millis'));
-
-        return summary;
-      })
-      .filter((summary) => {
-        const ignoreLabels = project.ignore_labels;
-        const { issue } = summary;
-        if (!issue) return true;
-
-        return !issue.labels.filter((label) => {
-          return ignoreLabels.indexOf(label.id) !== -1;
-        }).length;
-      })
-      .value();
+    const summaries = ReportService._normalizeData(data, project, columns);
 
     const labels = _(summaries)
       .map('board_moves')
@@ -211,7 +190,7 @@ const ReportService = (($, _, App) => ({
         return {
           data,
           order: column.order,
-          visible: column.visible,
+          visible: true,
           label: column.name,
           borderColor: column.color,
           backgroundColor: column.color,
@@ -219,6 +198,7 @@ const ReportService = (($, _, App) => ({
       })
       .filter('visible')
       .sortBy('order')
+      .reverse()
       .value();
 
     return {

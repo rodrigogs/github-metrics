@@ -121,6 +121,7 @@ const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Co
     $('.column-color.color-picker').spectrum({
       showInput: true,
       allowEmpty: false,
+      showInitial: true,
       preferredFormat: 'hex',
     });
   };
@@ -324,17 +325,9 @@ const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Co
     try {
       report = await ReportService.summary(query);
 
-      if (cfdCard.closest('.card').find('.collapse').hasClass('show')) {
-        loadCfd();
-      }
-
-      if (leadTimeCard.closest('.card').find('.collapse').hasClass('show')) {
-        loadLeadTime();
-      }
-
-      if (cfdCard.closest('.card').find('.collapse').hasClass('show')) {
-        loadWip();
-      }
+      loadCfd();
+      loadLeadTime();
+      loadWip();
     } catch (err) {
       console.error(err);
       toastr.error('An error has occurred');
