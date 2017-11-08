@@ -246,7 +246,7 @@ const ReportService = (($, _, App, Util) => ({
       .uniq()
       .value();
 
-    const columns = _(summaries)
+    const datasets = _(summaries)
       .map((summ) => {
         summ.board_moves.forEach((move) => {
           move.issue = summ.issue.number;
