@@ -2,6 +2,7 @@ const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Co
   /* Charts */
   let cfdChart;
   let wipChart;
+  let leadTimeChart;
 
   /* Elements */
   let reportForm;
@@ -294,6 +295,8 @@ const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Co
    *
    */
   const loadLeadTime = () => {
+    leadTimeChart.data = ReportService.getLeadTimeData(report, getCurrentProject(), columns, fromDate.val(), toDate.val());
+    leadTimeChart.update();
   };
 
   /**
@@ -397,6 +400,38 @@ const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Co
             scaleLabel: {
               display: true,
               labelString: 'Days',
+            },
+          }],
+          yAxes: [{
+            scaleLabel: {
+              display: true,
+              labelString: 'Issues',
+            },
+          }],
+        },
+      },
+    });
+
+    leadTimeChart = new Chart(leadTimeCanvas[0], {
+      type: 'line',
+      options: {
+        responsive: true,
+        legend: {
+          labels: {
+            usePointStyle: false,
+          },
+          pointStyle: 'rectRot',
+        },
+        elements: {
+          line: {
+            tension: 0,
+          },
+        },
+        scales: {
+          xAxes: [{
+            scaleLabel: {
+              display: true,
+              labelString: 'Weeks',
             },
           }],
           yAxes: [{

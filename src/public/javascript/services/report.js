@@ -31,6 +31,7 @@ const ReportService = (($, _, App) => ({
           move.month = date.month() + 1;
           move.year = date.year();
           move.dayOfYear = date.dayOfYear();
+          move.weekOfYear = date.week();
           move.millis = date.valueOf();
           move.formatedDate = date.format('DD/MM/YYYY');
 
@@ -119,7 +120,7 @@ const ReportService = (($, _, App) => ({
         return {
           data,
           order: column.order,
-          visible: true,
+          visible: column.visible,
           label: column.name,
           borderColor: column.color,
           backgroundColor: Color(column.color).alpha(0.3).rgbString(),
@@ -129,6 +130,85 @@ const ReportService = (($, _, App) => ({
       .sortBy('order')
       .reverse()
       .value();
+
+    return {
+      labels,
+      datasets,
+    };
+  },
+
+  /**
+   * @param data
+   * @param project
+   * @param columns
+   * @return {{labels, datasets}}
+   */
+  getLeadTimeData: (data, project, columns) => {
+    const summaries = ReportService._normalizeData(data, project, columns);
+
+    const labels = _(summaries)
+      .map('board_moves')
+      .flatten()
+      .sortBy('millis')
+      .map('weekOfYear')
+      .uniq()
+      .value();
+
+    const weeks = _(summaries)
+      .map((summ) => {
+        summ.board_moves.forEach((move) => {
+          move.issue = summ.issue.number;
+        });
+        return summ.board_moves;
+      })
+      .flatten()
+      .filter(move => move.column.visible)
+      .groupBy('issue')
+      .filter((issue) => {
+        const hasFirst = issue.find((move) => move.column.order === _(columns).filter('visible').filter(move => move.order > 0).minBy('order').order);
+        const hasLast = issue.find((move) => move.column.order === _(columns).filter('visible').filter(move => move.order > 0).maxBy('order').order);
+        return hasFirst && hasLast;
+      })
+      .map((issue) => {
+        const first = issue.find((move) => move.column.order === _(columns).filter('visible').filter(move => move.order > 0).minBy('order').order);
+        const last = issue.find((move) => move.column.order === _(columns).filter('visible').filter(move => move.order > 0).maxBy('order').order);
+        const leadTime = last.dayOfYear - first.dayOfYear;
+
+        return {
+          week: last.weekOfYear,
+          leadTime,
+        };
+      })
+      .groupBy('week')
+      .value();
+
+    const datasets = labels.map((week, index) => {
+      let totalWeeksLeadTime = 0;
+      let totalIssuesFromWeeks = 0;
+
+      const data = [];
+
+      for (let i = 0; i <= index; i += 1) {
+        const weekNumber = labels[i];
+
+        (weeks[weekNumber] || []).forEach((issue) => {
+          totalIssuesFromWeeks += 1;
+          totalWeeksLeadTime += issue.leadTime;
+        });
+
+        const leadTime = (totalWeeksLeadTime / totalIssuesFromWeeks) || 0;
+        data.push(leadTime.toFixed(2));
+      }
+
+      return {
+        data,
+        label: week,
+        fill: false,
+        borderColor: randomColor(),
+        pointStyle: 'crossRot',
+        pointRadius: 10,
+      };
+    });
 
     return {
       labels,
@@ -190,7 +270,7 @@ const ReportService = (($, _, App) => ({
         return {
           data,
           order: column.order,
-          visible: true,
+          visible: column.visible,
           label: column.name,
           borderColor: column.color,
           backgroundColor: column.color,

@@ -14,8 +14,8 @@ const logger = require('../../config/logger');
 
 const _saveOrUpdate = Schema => (oldObj, newObj) => {
   debug('saving data for entity', Schema.modelName);
-  if (oldObj) return Object.assign(oldObj, newObj).save();
-  return new Schema(newObj).save();
+  if (oldObj) return new Schema(Object.assign(oldObj, newObj), { versionKey: false }).save();
+  return new Schema(newObj, { versionKey: false }).save();
 };
 
 const _validateDelivery = Schema => async (delivery) => {
