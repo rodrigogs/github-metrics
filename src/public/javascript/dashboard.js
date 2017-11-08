@@ -207,15 +207,16 @@ const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Co
   };
 
   /**
+   * @param [renewCache=true]
    * @return {Promise.<void>}
    */
-  const loadProjectColumns = async () => {
+  const loadProjectColumns = async (renewCache = true) => {
     disableControls();
 
     const projectId = projectSelect.find(':selected').val();
 
     try {
-      const data = await ColumnService.listForProject(projectId);
+      const data = await ColumnService.listForProject(projectId, renewCache);
       populateProjectColumns(data);
     } catch (err) {
       toastr.error('Error retrieving columns for project');
@@ -226,13 +227,14 @@ const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Co
   };
 
   /**
+   * @param [renewCache=true]
    * @return {Promise.<void>}
    */
-  const loadProjects = async () => {
+  const loadProjects = async (renewCache = true) => {
     disableControls();
 
     try {
-      const data = await ProjectService.list();
+      const data = await ProjectService.list(renewCache);
       populateProjects(data);
     } catch (err) {
       toastr.error('Error retrieving projects');
@@ -275,13 +277,14 @@ const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Co
   };
 
   /**
+   * @param [renewCache=true]
    * @return {Promise.<void>}
    */
-  const loadLabels = async () => {
+  const loadLabels = async (renewCache = true) => {
     disableControls();
 
     try {
-      const data = await LabelService.list();
+      const data = await LabelService.list(renewCache);
       populateLabels(data);
     } catch (err) {
       toastr.error('Error retrieving labels');
@@ -295,38 +298,48 @@ const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Co
    *
    */
   const loadLeadTime = () => {
-    leadTimeChart.data = ReportService.getLeadTimeData(report, getCurrentProject(), columns, fromDate.val(), toDate.val());
-    leadTimeChart.update();
+    ReportService
+      .getLeadTimeData(report, getCurrentProject())
+      .then((data) => {
+        leadTimeChart.data = data;
+        leadTimeChart.update();
+      });
   };
 
   /**
    *
    */
   const loadCfd = () => {
-    cfdChart.data = ReportService.getCfdData(report, getCurrentProject(), columns, fromDate.val(), toDate.val());
-    cfdChart.update();
+    ReportService
+      .getCfdData(report, getCurrentProject(), fromDate.val(), toDate.val())
+      .then((data) => {
+        cfdChart.data = data;
+        cfdChart.update();
+      });
   };
 
   /**
    *
    */
   const loadWip = () => {
-    wipChart.data = ReportService.getWipData(report, getCurrentProject(), columns);
-    wipChart.update();
+    ReportService
+      .getWipData(report, getCurrentProject())
+      .then((data) => {
+        wipChart.data = data;
+        wipChart.update();
+      });
   };
 
   /**
-   * @param e
+   * @param [renewCache=true]
    * @return {Promise.<void>}
    */
-  const loadReport = async (e) => {
-    if (e) e.preventDefault();
-
+  const loadReport = async (renewCache = true) => {
     const query = reportForm.serialize();
     disableControls();
 
     try {
-      report = await ReportService.summary(query);
+      report = await ReportService.summary(query, renewCache);
 
       loadCfd();
       loadLeadTime();

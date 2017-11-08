@@ -1,15 +1,28 @@
-const ReportService = (($, _, App) => ({
+const ReportService = (($, _, App, Util) => ({
+
+  /**
+   *
+   */
+  _cache: {},
 
   /**
    * @param query
+   * @param [renewCache=false]
    * @return Promise
    */
-  summary: (query) => new Promise((resolve, reject) => {
+  summary: (query, renewCache = false) => new Promise((resolve, reject) => {
+    const queryHash = Util.hashify(query);
+    const cache = ReportService._cache[queryHash];
+    if (cache && cache.length && !renewCache) return resolve(cache);
+
     $.ajax({
       method: 'GET',
       url: App.getBaseUrl(`/api/v1/report/summary?${query}`),
       dataType: 'json',
-      success: resolve,
+      success: (data) => {
+        ReportService._cache[queryHash] = data;
+        resolve(data);
+      },
       error: reject,
     });
   }),
@@ -64,12 +77,12 @@ const ReportService = (($, _, App) => ({
   /**
    * @param data
    * @param project
-   * @param columns
    * @param from
    * @param to
    * @return {{labels, datasets}}
    */
-  getCfdData: (data, project, columns, from, to) => {
+  getCfdData: async (data, project, from, to) => {
+    const columns = await ColumnService.listForProject(project.id);
     const summaries = ReportService._normalizeData(data, project, columns);
 
     let labels = [from, ..._(summaries)
@@ -140,10 +153,10 @@ const ReportService = (($, _, App) => ({
   /**
    * @param data
    * @param project
-   * @param columns
    * @return {{labels, datasets}}
    */
-  getLeadTimeData: (data, project, columns) => {
+  getLeadTimeData: async (data, project) => {
+    const columns = await ColumnService.listForProject(project.id);
     const summaries = ReportService._normalizeData(data, project, columns);
 
     const labels = _(summaries)
@@ -219,10 +232,10 @@ const ReportService = (($, _, App) => ({
   /**
    * @param data
    * @param project
-   * @param columns
    * @return {{labels, datasets}}
    */
-  getWipData: (data, project, columns) => {
+  getWipData: async (data, project) => {
+    const columns = await ColumnService.listForProject(project.id);
     const summaries = ReportService._normalizeData(data, project, columns);
 
     const labels = _(summaries)
@@ -233,7 +246,7 @@ const ReportService = (($, _, App) => ({
       .uniq()
       .value();
 
-    const datasets = _(summaries)
+    const columns = _(summaries)
       .map((summ) => {
         summ.board_moves.forEach((move) => {
           move.issue = summ.issue.number;
@@ -286,4 +299,4 @@ const ReportService = (($, _, App) => ({
     }
   },
 
-}))(jQuery, _, App);
+}))(jQuery, _, App, Util);
