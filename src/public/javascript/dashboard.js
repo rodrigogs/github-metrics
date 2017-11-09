@@ -323,7 +323,7 @@ const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Co
    */
   const loadWip = () => {
     ReportService
-      .getWipData(report, getCurrentProject())
+      .getWipData(report, getCurrentProject(), fromDate.val(), toDate.val())
       .then((data) => {
         wipChart.data = data;
         wipChart.update();

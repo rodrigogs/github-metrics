@@ -1,4 +1,4 @@
-const ReportService = (($, _, App, Util) => ({
+const ReportService = (($, _, moment, App, Util) => ({
 
   /**
    *
@@ -48,15 +48,17 @@ const ReportService = (($, _, App, Util) => ({
           move.millis = date.valueOf();
           move.formatedDate = date.format('DD/MM/YYYY');
 
-          const column = columns.find(c => c.id === move.to_column.id || c.name === move.to_column.name);
-          if (column) {
-            move.column = $.extend(true, {}, column);
+          const fromColumn = columns.find(c => c.id === (move.from_column || {}).id || c.name === (move.from_column || {}).name);
+          if (fromColumn) {
+            move.from_column = $.extend(true, {}, fromColumn);
           }
 
-          delete move.from_column;
-          delete move.to_column;
+          const toColumn = columns.find(c => c.id === (move.to_column || {}).id || c.name === (move.to_column || {}).name);
+          if (toColumn) {
+            move.to_column = $.extend(true, {}, toColumn);
+          }
         });
-        summary.board_moves = _.filter(summary.board_moves, move => !!move.column);
+        summary.board_moves = _.filter(summary.board_moves, move => !!move.to_column);
 
         _.groupBy(summary.board_moves, 'dayOfYear');
 
@@ -103,22 +105,22 @@ const ReportService = (($, _, App, Util) => ({
       })
       .flatten()
       .sortBy('millis')
-      .groupBy('column.order')
+      .groupBy('to_column.order')
       .map((order) => { // Group columns by order
-        const uniqueColumns = _.uniqBy(order, 'column.id');
+        const uniqueColumns = _.uniqBy(order, 'to_column.id');
         if (uniqueColumns.length === 1) return order;
 
-        const name = _.map(uniqueColumns, 'column.name').join(' / ');
+        const name = _.map(uniqueColumns, 'to_column.name').join(' / ');
         return _.map(order, (col) => {
-          col.column.id = `composit-id-${name}${col.column.order}`;
-          col.column.name = name;
+          col.to_column.id = `composit-id-${name}${col.to_column.order}`;
+          col.to_column.name = name;
           return col;
         });
       })
       .flatten()
-      .groupBy('column.id')
+      .groupBy('to_column.id')
       .map((col) => {
-        const column = (col[0] || {}).column || {};
+        const column = (col[0] || {}).to_column || {};
         column.color = column.color || randomColor();
         column.order = column.order || 0;
 
@@ -175,16 +177,16 @@ const ReportService = (($, _, App, Util) => ({
         return summ.board_moves;
       })
       .flatten()
-      .filter(move => move.column.visible)
+      .filter(move => move.to_column.visible)
       .groupBy('issue')
       .filter((issue) => {
-        const hasFirst = issue.find((move) => move.column.order === _(columns).filter('visible').filter(move => move.order > 0).minBy('order').order);
-        const hasLast = issue.find((move) => move.column.order === _(columns).filter('visible').filter(move => move.order > 0).maxBy('order').order);
+        const hasFirst = issue.find((move) => move.to_column.order === _(columns).filter('visible').filter(move => move.order > 0).minBy('order').order);
+        const hasLast = issue.find((move) => move.to_column.order === _(columns).filter('visible').filter(move => move.order > 0).maxBy('order').order);
         return hasFirst && hasLast;
       })
       .map((issue) => {
-        const first = issue.find((move) => move.column.order === _(columns).filter('visible').filter(move => move.order > 0).minBy('order').order);
-        const last = issue.find((move) => move.column.order === _(columns).filter('visible').filter(move => move.order > 0).maxBy('order').order);
+        const first = issue.find((move) => move.to_column.order === _(columns).filter('visible').filter(move => move.order > 0).minBy('order').order);
+        const last = issue.find((move) => move.to_column.order === _(columns).filter('visible').filter(move => move.order > 0).maxBy('order').order);
         const leadTime = last.dayOfYear - first.dayOfYear;
 
         return {
@@ -232,71 +234,91 @@ const ReportService = (($, _, App, Util) => ({
   /**
    * @param data
    * @param project
+   * @param from
+   * @param to
    * @return {{labels, datasets}}
    */
-  getWipData: async (data, project) => {
+  getWipData: async (data, project, from, to) => {
     const columns = await ColumnService.listForProject(project.id);
     const summaries = ReportService._normalizeData(data, project, columns);
 
-    const labels = _(summaries)
-      .map('board_moves')
-      .flatten()
-      .sortBy('millis')
-      .map('formatedDate')
-      .uniq()
-      .value();
+    const fromDate = moment(from, 'DD/MM/YYYY');
+    const toDate = moment(to, 'DD/MM/YYYY');
 
-    const datasets = _(summaries)
-      .map((summ) => {
-        summ.board_moves.forEach((move) => {
-          move.issue = summ.issue.number;
-        });
-        return summ.board_moves;
-      })
-      .flatten()
-      .sortBy('millis')
-      .groupBy('column.order')
-      .map((order) => { // Group columns by order
-        const uniqueColumns = _.uniqBy(order, 'column.id');
-        if (uniqueColumns.length === 1) return order;
+    const labels = [fromDate.format('DD/MM/YYYY')];
 
-        const name = _.map(uniqueColumns, 'column.name').join(' / ');
-        return _.map(order, (col) => {
-          col.column.id = `composit-id-${name}${col.column.order}`;
-          col.column.name = name;
-          return col;
-        });
-      })
-      .flatten()
-      .groupBy('column.id')
-      .map((col) => {
-        const column = (col[0] || {}).column || {};
-        column.color = column.color || randomColor();
-        column.order = column.order || 0;
+    let lastDate = fromDate;
+    while (lastDate.isBefore(toDate)) {
+      lastDate = lastDate.clone().add(1, 'days');
+      labels.push(lastDate.format('DD/MM/YYYY'));
+    }
 
-        col = _.uniqBy(col, column => column.issue + column.formatedDate);
+    const moves = _(summaries).map('board_moves').flatten().value();
 
-        const data = _.map(labels, (date) => {
-          return _.filter(col, ['formatedDate', date]).length;
-        });
+    const columnsCache = {};
+    const columnColorCache = {};
+    const columnOrderCache = {};
+    const dailyMovesCache = {};
 
-        return {
-          data,
-          order: column.order,
-          visible: column.visible,
-          label: column.name,
-          borderColor: column.color,
-          backgroundColor: column.color,
-        }
-      })
-      .filter('visible')
-      .sortBy('order')
-      .value();
+    const getDailyColumnCache = day => (column) => {
+      let dailyCache = dailyMovesCache[day];
+      if (!dailyCache) dailyCache = (dailyMovesCache[day] = {});
+
+      let columnCache = dailyCache[column.id];
+      if (!columnCache) {
+        const total = _(dailyMovesCache).map().map(val => _.map(val)).flatten().filter({ id: column.id }).sumBy('count');
+        columnCache = (dailyCache[column.id] = Object.assign({}, column, { count: 0, total }));
+      }
+
+      return columnCache;
+    }
+
+    labels.forEach((day, index) => moves.forEach((move) => {
+      if (day !== move.formatedDate) return;
+
+      const from = move.from_column;
+      const to = move.to_column;
+
+      if (from) {
+        columnsCache[from.id] = from;
+
+        from.color = from.color || columnColorCache[from.id] || (columnColorCache[from.id] = randomColor());
+        from.order = from.order || columnOrderCache[from.id] || (columnOrderCache[from.id] = 0);
+
+        const cache = getDailyColumnCache(day)(from);
+        if (cache.count > 0) cache.count -= 1;
+        if (cache.total > 0) cache.total -= 1;
+      }
+
+      if (to) {
+        columnsCache[to.id] = to;
+
+        to.color = to.color || columnColorCache[to.id] || (columnColorCache[to.id] = randomColor());
+        to.order = to.order || columnOrderCache[to.id] || (columnOrderCache[to.id] = 0);
+
+        const cache = getDailyColumnCache(day)(to);
+        cache.count += 1;
+        cache.total += 1;
+      }
+    }));
+
+    const datasets = _(columns).orderBy('order').filter('visible').map((column) => {
+      const data = labels.map(day => getDailyColumnCache(day)(column).total);
+
+      return {
+        data,
+        label: column.name,
+        borderColor: column.color,
+        backgroundColor: column.color,
+      };
+    }).value();
+
+    console.log(datasets)
 
     return {
       labels,
       datasets,
-    }
+    };
   },
 
-}))(jQuery, _, App, Util);
+}))(jQuery, _, moment, App, Util);
