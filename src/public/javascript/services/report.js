@@ -259,23 +259,22 @@ const ReportService = (($, _, moment, App, Util) => ({
     const columnColorCache = {};
     const columnOrderCache = {};
     const dailyMovesCache = {};
+    const columnsMoveCache = {};
 
-    const getDailyColumnCache = day => (column) => {
+    const getDailyColumnCache = day => (column, create = true) => {
+      let columnMoves = columnsMoveCache[column.id];
+      if (!columnMoves) columnMoves = (columnsMoveCache[column.id] = 0);
+
       let dailyCache = dailyMovesCache[day];
       if (!dailyCache) dailyCache = (dailyMovesCache[day] = {});
 
       let columnCache = dailyCache[column.id];
-      if (!columnCache) {
-        const total = _(dailyMovesCache).map().map(val => _.map(val)).flatten().filter({ id: column.id }).sumBy('count');
-        columnCache = (dailyCache[column.id] = Object.assign({}, column, { count: 0, total }));
-      }
+      if (!columnCache && create) columnCache = (dailyCache[column.id] = Object.assign({}, column, { count: columnMoves }));
 
-      return columnCache;
+      return columnCache || { count: 0 };
     }
 
     labels.forEach((day, index) => moves.forEach((move) => {
-      if (day !== move.formatedDate) return;
-
       const from = move.from_column;
       const to = move.to_column;
 
@@ -286,8 +285,10 @@ const ReportService = (($, _, moment, App, Util) => ({
         from.order = from.order || columnOrderCache[from.id] || (columnOrderCache[from.id] = 0);
 
         const cache = getDailyColumnCache(day)(from);
-        if (cache.count > 0) cache.count -= 1;
-        if (cache.total > 0) cache.total -= 1;
+        if (day === move.formatedDate && cache.count > 0) {
+          cache.count -= 1;
+          columnsMoveCache[from.id] -= 1;
+        }
       }
 
       if (to) {
@@ -297,13 +298,15 @@ const ReportService = (($, _, moment, App, Util) => ({
         to.order = to.order || columnOrderCache[to.id] || (columnOrderCache[to.id] = 0);
 
         const cache = getDailyColumnCache(day)(to);
-        cache.count += 1;
-        cache.total += 1;
+        if (day === move.formatedDate) {
+          cache.count += 1;
+          columnsMoveCache[to.id] += 1;
+        }
       }
     }));
 
-    const datasets = _(columns).orderBy('order').filter('visible').map((column) => {
-      const data = labels.map(day => getDailyColumnCache(day)(column).total);
+    const datasets = _(columnsCache).orderBy('order').filter('visible').map((column) => {
+      const data = labels.map(day => getDailyColumnCache(day)(column, false).count);
 
       return {
         data,
@@ -312,8 +315,6 @@ const ReportService = (($, _, moment, App, Util) => ({
         backgroundColor: column.color,
       };
     }).value();
-
-    console.log(datasets)
 
     return {
       labels,
