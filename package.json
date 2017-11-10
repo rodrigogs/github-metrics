@@ -12,7 +12,7 @@
   "scripts": {
     "start": "dotenv nodemon ./bin/www",
     "eslint": "eslint . --ext .js",
-    "test": "cross-env NODE_ENV=test mocha --ui tdd $(find test -name '*.spec.js')",
+    "test": "cross-env NODE_ENV=test mocha --exit --ui tdd $(find test -name '*.spec.js')",
     "coverage": "cross-env NODE_ENV=test nyc --reporter=html --reporter=lcov npm test",
     "docs": "apidoc -i src/controllers -o doc/"
   },
