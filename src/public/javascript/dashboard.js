@@ -3,6 +3,7 @@ const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Co
   let cfdChart;
   let wipChart;
   let leadTimeChart;
+  let throughputChart;
 
   /* Elements */
   let reportForm;
@@ -21,9 +22,11 @@ const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Co
   let cfdCard;
   let leadTimeCard;
   let wipCard;
+  let throughputCard;
   let cfdCanvas;
   let leadTimeCanvas;
   let wipCanvas;
+  let throughputCanvas;
 
   /* Data */
   let projects;
@@ -331,6 +334,18 @@ const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Co
   };
 
   /**
+   *
+   */
+  const loadThroughput = () => {
+    ReportService
+      .getThroughputData(report, getCurrentProject(), fromDate.val(), toDate.val())
+      .then((data) => {
+        throughputChart.data = data;
+        throughputChart.update();
+      });
+  };
+
+  /**
    * @param [renewCache=true]
    * @return {Promise.<void>}
    */
@@ -344,6 +359,7 @@ const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Co
       loadCfd();
       loadLeadTime();
       loadWip();
+      loadThroughput();
     } catch (err) {
       console.error(err);
       toastr.error('An error has occurred');
@@ -372,9 +388,11 @@ const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Co
     cfdCard = $('a#cfd_card');
     leadTimeCard = $('a#lead_time_card');
     wipCard = $('a#wip_card');
+    throughputCard = $('a#throughput_card');
     cfdCanvas = $('canvas#cfd');
     leadTimeCanvas = $('canvas#lead_time');
     wipCanvas = $('canvas#wip');
+    throughputCanvas = $('canvas#throughput');
   };
 
   /**
@@ -393,6 +411,7 @@ const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Co
     cfdCard.on('click', loadCfd);
     leadTimeCard.on('click', loadLeadTime);
     wipCard.on('click', loadWip);
+    throughputCard.on('click', loadThroughput);
   };
 
   /**
@@ -475,6 +494,32 @@ const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Co
         },
       },
     });
+
+    throughputChart = new Chart(throughputCanvas[0], {
+      type: 'line',
+      options: {
+        responsive: true,
+        elements: {
+          line: {
+            tension: 0,
+          },
+        },
+        scales: {
+          xAxes: [{
+            scaleLabel: {
+              display: true,
+              labelString: 'Weeks',
+            },
+          }],
+          yAxes: [{
+            scaleLabel: {
+              display: true,
+              labelString: 'Issues',
+            },
+          }],
+        },
+      },
+    });
   };
 
   /**
@@ -484,7 +529,7 @@ const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Co
     initElements();
     initEventHandlers();
     initCharts();
-    loadProjects().then(loadLabels);
+    loadProjects().then(loadLabels).then(loadReport);
   };
 
   return {

@@ -42,3 +42,11 @@ block content
         .collapse#collapseWip(role='tabpanel' aria-labelledby='heading_wip' data-parent='#accordion')
           .card-body
             canvas#wip
+
+      .card
+        .card-header#heading_throughput(role='tab')
+          h5.mb-0
+            a#throughput_card(data-toggle='collapse' href='#collapseThroughput' aria-expanded='true' aria-controls='collapseThroughput') Throughput
+        .collapse#collapseThroughput(role='tabpanel' aria-labelledby='heading_throughput' data-parent='#accordion')
+          .card-body
+            canvas#throughput

@@ -1,4 +1,4 @@
-const ReportService = (($, _, moment, App, Util) => ({
+const ReportService = (($, _, moment, App, Util, ColumnService) => ({
 
   /**
    *
@@ -322,4 +322,52 @@ const ReportService = (($, _, moment, App, Util) => ({
     };
   },
 
-}))(jQuery, _, moment, App, Util);
+  /**
+   * @param data
+   * @param project
+   * @param from
+   * @param to
+   * @return {{labels, datasets}}
+   */
+  getThroughputData: async (data, project, from, to) => {
+    const columns = await ColumnService.listForProject(project.id);
+    const summaries = ReportService._normalizeData(data, project, columns);
+
+    const labels = _(summaries)
+      .map('board_moves')
+      .flatten()
+      .sortBy('millis')
+      .map('weekOfYear')
+      .uniq()
+      .value();
+
+    const datasets = _(summaries)
+      .map('board_moves')
+      .flatten()
+      .filter((move) => {
+        return move.to_column.order === _(columns).filter('visible').filter(move => move.order > 0).maxBy('order').order;
+      })
+      .groupBy('weekOfYear')
+      .map((week, key) => {
+        const data = labels.map((w) => {
+          const isSameWeek = (Number(w) === Number(key));
+          return isSameWeek ? week.length: 0;
+        });
+
+        return {
+          data,
+          label: key,
+          fill: false,
+          borderColor: randomColor(),
+          pointRadius: 10,
+        };
+      })
+      .value();
+
+    return {
+      labels,
+      datasets,
+    };
+  },
+
+}))(jQuery, _, moment, App, Util, ColumnService);
