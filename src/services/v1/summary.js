@@ -170,12 +170,19 @@ const _summarizeCardEvent = async (cardEvent) => {
     when: cardEvent.project_card.updated_at,
   });
 
-  if ((cardEvent.changes && cardEvent.changes.column_id) || cardEvent.action === 'created') {
+  const hasColumnChange = (cardEvent.changes
+    && cardEvent.changes.column_id
+    && cardEvent.changes.column_id.from);
+
+  const movedInsideColumn = (cardEvent.action === 'moved' && !hasColumnChange);
+
+  if ((hasColumnChange || cardEvent.action === 'created') && !movedInsideColumn) {
     const fromColumn = (cardEvent.action === 'moved')
       ? await Column.findOne({ id: cardEvent.changes.column_id.from }).exec() : null;
     const toColumn = await Column.findOne({ url: cardEvent.project_card.column_url }).exec();
 
     summary.board_moves.push({
+      card_event: cardEvent,
       from_column: fromColumn,
       to_column: toColumn,
       when: cardEvent.project_card.updated_at,

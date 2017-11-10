@@ -36,6 +36,7 @@ const SummarySchema = new Schema({
     when: Date,
   }],
   board_moves: [{
+    card_event: CardEventSchema,
     from_column: ColumnSchema,
     to_column: ColumnSchema,
     when: Date,
