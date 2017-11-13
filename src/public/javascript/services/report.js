@@ -40,6 +40,7 @@ const ReportService = (($, _, moment, App, Util, ColumnService) => ({
       .map((summary) => {
         _.each(summary.board_moves, (move) => {
           const date = moment.utc(move.when);
+          move.date = date;
           move.day = date.date();
           move.month = date.month() + 1;
           move.year = date.year();
@@ -325,11 +326,9 @@ const ReportService = (($, _, moment, App, Util, ColumnService) => ({
   /**
    * @param data
    * @param project
-   * @param from
-   * @param to
    * @return {{labels, datasets}}
    */
-  getThroughputData: async (data, project, from, to) => {
+  getThroughputData: async (data, project) => {
     const columns = await ColumnService.listForProject(project.id);
     const summaries = ReportService._normalizeData(data, project, columns);
 
@@ -337,35 +336,37 @@ const ReportService = (($, _, moment, App, Util, ColumnService) => ({
       .map('board_moves')
       .flatten()
       .sortBy('millis')
-      .map('weekOfYear')
-      .uniq()
+      .map(move => ({
+        firstWeekDay: move.date.isoWeekday(1).format('DD/MM/YYYY'),
+        weekOfYear: move.weekOfYear,
+      }))
+      .uniqBy('weekOfYear')
       .value();
 
-    const datasets = _(summaries)
+    const datasets = [];
+
+    const totals = _(summaries)
       .map('board_moves')
       .flatten()
-      .filter((move) => {
-        return move.to_column.order === _(columns).filter('visible').filter(move => move.order > 0).maxBy('order').order;
-      })
+      .sortBy('millis')
       .groupBy('weekOfYear')
-      .map((week, key) => {
-        const data = labels.map((w) => {
-          const isSameWeek = (Number(w) === Number(key));
-          return isSameWeek ? week.length: 0;
-        });
-
-        return {
-          data,
-          label: key,
-          fill: false,
-          borderColor: randomColor(),
-          pointRadius: 10,
-        };
+      .map((week) => {
+        return _.filter(week, (move) => {
+          return move.to_column.order === _(columns).filter('visible').filter(move => move.order > 0).maxBy('order').order;
+        }).length;
       })
       .value();
 
+    datasets.push({
+      data: totals,
+      label: 'Closed Issues',
+      fill: false,
+      borderColor: 'blue',
+      pointRadius: 10,
+    });
+
     return {
-      labels,
+      labels: _.map(labels, 'firstWeekDay'),
       datasets,
     };
   },
