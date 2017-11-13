@@ -166,8 +166,11 @@ const ReportService = (($, _, moment, App, Util, ColumnService) => ({
       .map('board_moves')
       .flatten()
       .sortBy('millis')
-      .map('weekOfYear')
-      .uniq()
+      .map(move => ({
+        firstWeekDay: move.date.isoWeekday(1).format('DD/MM/YYYY'),
+        weekOfYear: move.weekOfYear,
+      }))
+      .uniqBy('weekOfYear')
       .value();
 
     const weeks = _(summaries)
@@ -179,6 +182,7 @@ const ReportService = (($, _, moment, App, Util, ColumnService) => ({
       })
       .flatten()
       .filter(move => move.to_column.visible)
+      .sortBy('millis')
       .groupBy('issue')
       .filter((issue) => {
         const hasFirst = issue.find((move) => move.to_column.order === _(columns).filter('visible').filter(move => move.order > 0).minBy('order').order);
@@ -198,36 +202,37 @@ const ReportService = (($, _, moment, App, Util, ColumnService) => ({
       .groupBy('week')
       .value();
 
-    const datasets = labels.map((week, index) => {
+    const totals = labels.map((week, index) => {
       let totalWeeksLeadTime = 0;
       let totalIssuesFromWeeks = 0;
 
-      const data = [];
+      let leadTime;
 
       for (let i = 0; i <= index; i += 1) {
-        const weekNumber = labels[i];
+        const weekNumber = labels[i].weekOfYear;
 
         (weeks[weekNumber] || []).forEach((issue) => {
           totalIssuesFromWeeks += 1;
           totalWeeksLeadTime += issue.leadTime;
         });
 
-        const leadTime = (totalWeeksLeadTime / totalIssuesFromWeeks) || 0;
-        data.push(leadTime.toFixed(2));
+        leadTime = (totalWeeksLeadTime / totalIssuesFromWeeks) || 0;
       }
 
-      return {
-        data,
-        label: week,
-        fill: false,
-        borderColor: randomColor(),
-        pointStyle: 'crossRot',
-        pointRadius: 10,
-      };
+      return leadTime.toFixed(2);
     });
 
+    const datasets = [{
+      data: totals,
+      label: 'Ratio',
+      fill: false,
+      borderColor: 'blue',
+      pointStyle: 'crossRot',
+      pointRadius: 10,
+    }];
+
     return {
-      labels,
+      labels: _.map(labels, 'firstWeekDay'),
       datasets,
     };
   },

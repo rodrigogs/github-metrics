@@ -1,4 +1,4 @@
-const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Color, moment, _, App, ProjectService, ColumnService, ReportService, LabelService) => {
+const Dashboard = ((window, document, $, Promise, toastr, dragula, Chart, randomColor, Color, moment, _, App, ProjectService, ColumnService, ReportService, LabelService) => {
   /* Charts */
   let cfdChart;
   let wipChart;
@@ -121,13 +121,6 @@ const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Co
     _.orderBy(columns, 'order')
       .map(template)
       .forEach((column => modalBody.append(column)));
-
-    $('.column-color.color-picker').spectrum({
-      showInput: true,
-      allowEmpty: false,
-      showInitial: true,
-      preferredFormat: 'hex',
-    });
   };
 
   /**
@@ -469,7 +462,7 @@ const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Co
           yAxes: [{
             scaleLabel: {
               display: true,
-              labelString: 'Issues',
+              labelString: 'Delivery Ratio(days)',
             },
           }],
         },
@@ -514,7 +507,7 @@ const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Co
           yAxes: [{
             scaleLabel: {
               display: true,
-              labelString: 'Issues',
+              labelString: 'Closed Issues',
             },
           }],
         },
@@ -535,6 +528,6 @@ const Dashboard = ((window, document, $, Promise, toastr, Chart, randomColor, Co
   return {
     init,
   };
-})(window, document, jQuery, Promise, toastr, Chart, randomColor, Color, moment, _, App, ProjectService, ColumnService, ReportService, LabelService);
+})(window, document, jQuery, Promise, toastr, dragula, Chart, randomColor, Color, moment, _, App, ProjectService, ColumnService, ReportService, LabelService);
 
 $(document).ready(Dashboard.init);
