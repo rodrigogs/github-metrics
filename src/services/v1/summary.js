@@ -203,6 +203,8 @@ const _processSummaryForIssue = issueEvent => async (summary) => {
   const rootCauses = _findRootCauses(summary.issue);
   const customStatuses = _findCustomStatuses(summary.issue);
 
+  summary.issue = Issue.findOne({ id: issueEvent.issue.id });
+
   if (rootCauses.length) {
     summary.root_causes.push({
       causes: rootCauses,
