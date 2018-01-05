@@ -8,26 +8,54 @@
 
 Track github project events from webhooks.
 
-#### Setup
+#### Requirements
 
-> Node.js **7.6.0** or higer is required
+- Node.js **7.6.0 >** 
+- Redis server
+- Mongodb
 
-> Download or clone github-metrics latest release at https://github.com/rodrigogs/github-metrics/releases
+#### Development setup
 
-> ```$ yarn install```
+- Download or clone github-metrics latest [release](https://github.com/rodrigogs/github-metrics/releases)
+-  `$ yarn install`
+-  Download [ngrok](https://ngrok.com/download) to expose your computer port to receive webhook events
+-  Start nkrok `$ ngrok http 3000`
+-  Create two Github OAuth Apps
+    -  One for authenticate your application to use web hooks
+        -  **Authorization callback URL:** https://your_url.ngrok.io/auth/githubtoken/callback
+    -  Other for authenticate your application users
+      -  **Authorization callback URL:** https://your_url.ngrok.io/auth/github/callback
+-  Create a .env file base on .env.sample and fill with the correct data
 
-#### Development
-> ```$ yarn start```
+```
+APP_NAME=GitHub Metrics
+NODE_ENV=development
+PORT=3000
+MONGO_DB=mongodb://url
+RECONNECTION_INTERVAL=15000
+HTTP_LOG_CONFIG=dev
+GITHUB_COMPANY_NAME=your_company_name
+GITHUB_CLIENT_ID=client_id
+GITHUB_CLIENT_SECRET=client_secret
+GITHUB_USERS_CLIENT_ID=client_users_id
+GITHUB_USERS_CLIENT_SECRET=client_users_secret
+REDIS_URL=redis://url
+APP_URL=https://your_url.ngrok.io
+SESSION_SECRET=my-secret
+```
+
+- Start the application: `$ yarn start`
 
 #### Production
-* Single instance
-  > ```$ NODE_ENV=production node bin/www```
+- Single instance
+    - `$ NODE_ENV=production node bin/www`
 
-* Cluster
-  > ```$ NODE_ENV=production node bin/fork```
+- Cluster
+    - `$ NODE_ENV=production node bin/fork`
 
 #### Test
-> ```$ yarn test```
+
+- `$ yarn test`
 
 License
 -------
