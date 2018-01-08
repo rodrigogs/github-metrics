@@ -71,7 +71,7 @@ const ReportService = (($, _, moment, App, Util, ColumnService) => ({
         if (!issue) return true;
 
         return !issue.labels.filter((label) => {
-          return ignoreLabels.indexOf(label.id) !== -1;
+          return label && ignoreLabels.indexOf(label.id) !== -1;
         }).length;
       })
       .value();
