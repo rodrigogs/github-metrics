@@ -13,6 +13,7 @@ rules:
   no-bitwise: off
   no-unused-expressions: off
   no-case-declarations: off
+  camelcase: off
 globals:
   process: on
   describe: on
