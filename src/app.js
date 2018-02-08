@@ -13,7 +13,7 @@ debug('bootstrapping application');
 
 const config = require('./config');
 const Env = require('./config/env');
-const routes = require('./routes/index.routes');
+const routes = require('./routes');
 
 /**
  * @param {Number} [port]

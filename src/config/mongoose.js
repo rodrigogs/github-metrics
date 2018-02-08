@@ -15,6 +15,7 @@ mongoose.set('debug', Env.NODE_ENV === 'development');
 
 const connect = () => mongoose.connect(url, {
   reconnectTries: Number.MAX_VALUE,
+  useMongoClient: true,
 }).then((conn) => {
   initialized = true;
   return conn;

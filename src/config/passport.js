@@ -3,19 +3,9 @@ const passport = require('passport');
 const GitHubStrategy = require('passport-github').Strategy;
 
 const Env = require('./env');
-const RedisProvider = require('../providers/redis.provider');
-const AuthService = require('../services/auth.service');
-const User = require('../models/v1/profile.v1.model');
-
-const _validateUserCompany = async (accessToken, cb) => {
-  const request = await AuthService.buildGitHubRequest(accessToken);
-  const orgs = await request.get('https://api.github.com/user/orgs');
-
-  if (orgs.data) {
-    const org = orgs.data.find(o => o.login === Env.GITHUB_COMPANY_NAME);
-    if (!org) return cb(new Error('User must be in the allowed company'));
-  }
-};
+const RedisProvider = require('../providers/redis');
+const AuthService = require('../services/auth');
+const User = require('../models/user');
 
 passport.serializeUser((user, done) => {
   done(null, user._id);
@@ -39,7 +29,6 @@ passport.use('github-token', new GitHubStrategy({
   scope: ['user:email', 'read:org', 'repo'],
 }, async (accessToken, refreshToken, profile, cb) => {
   try {
-    await _validateUserCompany(accessToken, cb);
     await AuthService.persistToken(accessToken, profile, 'github');
     cb();
   } catch (err) {
@@ -48,15 +37,19 @@ passport.use('github-token', new GitHubStrategy({
 }));
 
 passport.use(new GitHubStrategy({
-  clientID: Env.GITHUB_CLIENT_ID,
-  clientSecret: Env.GITHUB_CLIENT_SECRET,
+  clientID: Env.GITHUB_USERS_CLIENT_ID,
+  clientSecret: Env.GITHUB_USERS_CLIENT_SECRET,
   callbackURL: `${Env.APP_URL}/auth/github/callback`,
   scope: ['user:email', 'read:org', 'repo'],
 }, async (accessToken, refreshToken, profile, cb) => {
   try {
-    await _validateUserCompany(accessToken, cb);
-
     const email = profile.emails.find(email => email.primary).value;
+    const request = await AuthService.buildGitHubRequest(accessToken);
+    const orgs = await request.get('https://api.github.com/user/orgs');
+    if (orgs.data) {
+      const org = orgs.data.find(o => o.login === Env.GITHUB_COMPANY_NAME);
+      if (!org) return cb(new Error('User must be in the allowed company'));
+    }
 
     let user = await User.findOne({ email }).exec();
     if (!user) {
