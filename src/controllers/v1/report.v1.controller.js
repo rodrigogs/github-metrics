@@ -1,6 +1,7 @@
 const debug = require('debug')('github-metrics:controllers:v1:report');
-
 const ReportService = require('../../services/v1/report.v1.service');
+
+require('../../services/v1/summary.v1.service');
 
 const ReportController = {
 

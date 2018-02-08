@@ -14,7 +14,7 @@ const ColumnController = {
     debug('executing find action');
 
     try {
-      const columns = await ColumnService.find(req.query);
+      const columns = await ColumnService.find(req.query).sort('name').exec();
       res.status(200).send(columns);
     } catch (err) {
       next(err);
