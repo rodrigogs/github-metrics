@@ -44,6 +44,7 @@ const SummarySchema = new Schema({
 }, {
   timestamps: {
     createdAt: 'generated_at',
+    updatedAt: 'updated_at',
   },
 });
 
