@@ -42,27 +42,11 @@ class Env {
   }
 
   /**
-   * @param {number} value
-   * @constructor
-   */
-  static set PORT(value) {
-    process.env.PORT = value;
-  }
-
-  /**
    * @return {string}
    * @constructor
    */
   static get MONGO_DB() {
     return process.env.MONGO_DB || 'mongodb://localhost:27017/github-metrics';
-  }
-
-  /**
-   * @param {string} value
-   * @constructor
-   */
-  static set MONGO_DB(value) {
-    process.env.MONGO_DB = value;
   }
 
   /**
@@ -74,27 +58,11 @@ class Env {
   }
 
   /**
-   * @param {number} value
-   * @constructor
-   */
-  static set RECONNECTION_INTERVAL(value) {
-    process.env.RECONNECTION_INTERVAL = value;
-  }
-
-  /**
    * @return {string}
    * @constructor
    */
   static get HTTP_LOG_CONFIG() {
     return process.env.HTTP_LOG_CONFIG || 'dev';
-  }
-
-  /**
-   * @param {string} value
-   * @constructor
-   */
-  static set HTTP_LOG_CONFIG(value) {
-    process.env.HTTP_LOG_CONFIG = value;
   }
 
   /**
@@ -106,27 +74,11 @@ class Env {
   }
 
   /**
-   * @param {string} value
-   * @constructor
-   */
-  static set GITHUB_COMPANY_NAME(value) {
-    process.env.GITHUB_COMPANY_NAME = value;
-  }
-
-  /**
    * @return {string}
    * @constructor
    */
   static get GITHUB_CLIENT_ID() {
     return process.env.GITHUB_CLIENT_ID;
-  }
-
-  /**
-   * @param {string} value
-   * @constructor
-   */
-  static set GITHUB_CLIENT_ID(value) {
-    process.env.GITHUB_CLIENT_ID = value;
   }
 
   /**
@@ -138,46 +90,6 @@ class Env {
   }
 
   /**
-   * @param {string} value
-   * @constructor
-   */
-  static set GITHUB_CLIENT_SECRET(value) {
-    process.env.GITHUB_CLIENT_SECRET = value;
-  }
-
-  /**
-   * @return {string}
-   * @constructor
-   */
-  static get GITHUB_USERS_CLIENT_ID() {
-    return process.env.GITHUB_USERS_CLIENT_ID;
-  }
-
-  /**
-   * @param {string} value
-   * @constructor
-   */
-  static set GITHUB_USERS_CLIENT_ID(value) {
-    process.env.GITHUB_USERS_CLIENT_ID = value;
-  }
-
-  /**
-   * @return {string}
-   * @constructor
-   */
-  static get GITHUB_USERS_CLIENT_SECRET() {
-    return process.env.GITHUB_USERS_CLIENT_SECRET;
-  }
-
-  /**
-   * @param {string} value
-   * @constructor
-   */
-  static set GITHUB_USERS_CLIENT_SECRET(value) {
-    process.env.GITHUB_USERS_CLIENT_SECRET = value;
-  }
-
-  /**
    * @example
    * [redis:]//[[user][:password@]][host][:port]
    * [/db-number][?db=db-number[&password=bar[&option=value]]]
@@ -186,14 +98,6 @@ class Env {
    */
   static get REDIS_URL() {
     return process.env.REDIS_URL;
-  }
-
-  /**
-   * @param {string} value
-   * @constructor
-   */
-  static set REDIS_URL(value) {
-    process.env.REDIS_URL = value;
   }
 
   /**
