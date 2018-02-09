@@ -41,6 +41,8 @@ appRouter.use(passport.session());
 
 // Healthy check
 appRouter.get('/healthcheck', HealthyCheckController.index);
+appRouter.get('/logs', HealthyCheckController.logs);
+appRouter.get('/logs/:logFile', HealthyCheckController.log);
 
 // Auth
 appRouter.use('/auth', auth);

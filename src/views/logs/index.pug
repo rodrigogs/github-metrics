@@ -1,0 +1,12 @@
+extends ../layouts/default
+
+block stylesheets
+
+block javascripts
+
+block content
+  .container
+    ul
+      for log in logs
+        li
+          a(href=`/logs/${log}`)= log
