@@ -72,7 +72,7 @@ const Dashboard = ((window, document, $, Promise, toastr, dragula, Chart, random
     projects.forEach((project) => {
       projectSelect.append($('<option>', {
         text: project.name,
-        value: project.id,
+        value: project.url,
       }));
     });
 
@@ -83,8 +83,8 @@ const Dashboard = ((window, document, $, Promise, toastr, dragula, Chart, random
    *
    */
   const getCurrentProject = () => {
-    const currentProjectId = projectSelect.find(':selected').val();
-    return projects.find(project => Number(project.id) === Number(currentProjectId));
+    const currentProjectUrl = projectSelect.find(':selected').val();
+    return projects.find(project => project.url === currentProjectUrl);
   };
 
   /**
@@ -209,10 +209,10 @@ const Dashboard = ((window, document, $, Promise, toastr, dragula, Chart, random
   const loadProjectColumns = async (renewCache = true) => {
     disableControls();
 
-    const projectId = projectSelect.find(':selected').val();
+    const projectUrl = projectSelect.find(':selected').val();
 
     try {
-      const data = await ColumnService.listForProject(projectId, renewCache);
+      const data = await ColumnService.listForProject(projectUrl, renewCache);
       populateProjectColumns(data);
     } catch (err) {
       toastr.error('Error retrieving columns for project');
@@ -366,7 +366,7 @@ const Dashboard = ((window, document, $, Promise, toastr, dragula, Chart, random
    */
   const initElements = () => {
     reportForm = $('form#report_form');
-    projectSelect = $('select#project_id');
+    projectSelect = $('select#project_url');
     columnsModalBtn = $('button#manage_columns');
     columnsModal = $('#column_manager');
     closeColumnsModalBtn = $('button#close_columns_modal');

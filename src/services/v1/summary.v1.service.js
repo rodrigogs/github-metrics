@@ -337,6 +337,17 @@ class SummaryService extends Summary {
 }
 
 // Schedule summarization to run every 5 minutes
-setInterval(SummaryService.summarize, 5 * (60 * 1000));
+setInterval(async () => {
+  try {
+    const startDate = new Date();
+    await SummaryService.summarize();
+    const endDate = new Date();
+
+    const seconds = (endDate.getTime() - startDate.getTime()) / 1000;
+    logger.info(`Summarization done in ${seconds} seconds`);
+  } catch (err) {
+    logger.error('Summarization failed', err);
+  }
+}, 5 * (60 * 1000));
 
 module.exports = SummaryService;

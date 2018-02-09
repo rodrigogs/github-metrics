@@ -14,7 +14,7 @@ const LabelController = {
     debug('executing find action');
 
     try {
-      const labels = await LabelService.find(req.query);
+      const labels = await LabelService.find(req.query).exec();
       res.status(200).send(labels);
     } catch (err) {
       next(err);

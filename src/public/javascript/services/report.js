@@ -85,7 +85,7 @@ const ReportService = (($, _, moment, App, Util, ColumnService) => ({
    * @return {{labels, datasets}}
    */
   getCfdData: async (data, project, from, to) => {
-    const columns = await ColumnService.listForProject(project.id);
+    const columns = await ColumnService.listForProject(project.url);
     const summaries = ReportService._normalizeData(data, project, columns);
 
     let labels = [from, ..._(summaries)
@@ -159,7 +159,7 @@ const ReportService = (($, _, moment, App, Util, ColumnService) => ({
    * @return {{labels, datasets}}
    */
   getLeadTimeData: async (data, project) => {
-    const columns = await ColumnService.listForProject(project.id);
+    const columns = await ColumnService.listForProject(project.url);
     const summaries = ReportService._normalizeData(data, project, columns);
 
     const labels = _(summaries)
@@ -245,7 +245,7 @@ const ReportService = (($, _, moment, App, Util, ColumnService) => ({
    * @return {{labels, datasets}}
    */
   getWipData: async (data, project, from, to) => {
-    const columns = await ColumnService.listForProject(project.id);
+    const columns = await ColumnService.listForProject(project.url);
     const summaries = ReportService._normalizeData(data, project, columns);
 
     const fromDate = moment(from, 'DD/MM/YYYY');
@@ -334,7 +334,7 @@ const ReportService = (($, _, moment, App, Util, ColumnService) => ({
    * @return {{labels, datasets}}
    */
   getThroughputData: async (data, project) => {
-    const columns = await ColumnService.listForProject(project.id);
+    const columns = await ColumnService.listForProject(project.url);
     const summaries = ReportService._normalizeData(data, project, columns);
 
     const labels = _(summaries)

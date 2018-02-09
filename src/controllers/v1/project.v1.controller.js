@@ -14,7 +14,7 @@ const ReportController = {
     debug('executing find action');
 
     try {
-      const projects = await ProjectService.find().sort('name').exec();
+      const projects = await ProjectService.find(req.query).sort('name').exec();
       res.status(200).send(projects);
     } catch (err) {
       next(err);

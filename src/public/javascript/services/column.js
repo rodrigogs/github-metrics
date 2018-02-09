@@ -6,19 +6,19 @@ const ColumnService = (($, App) => ({
   _cache: {},
 
   /**
-   * @param projectId
+   * @param projectUrl
    * @param [renewCache=false]
    * @return Promise
    */
-  listForProject: (projectId, renewCache = false) => new Promise((resolve, reject) => {
-    const cache = ColumnService._cache[projectId];
+  listForProject: (projectUrl, renewCache = false) => new Promise((resolve, reject) => {
+    const cache = ColumnService._cache[projectUrl];
     if (cache && cache.length && !renewCache) return resolve(cache);
 
     $.ajax({
-      url: App.getBaseUrl(`/api/v1/column?project.id=${projectId}`),
+      url: App.getBaseUrl(`/api/v1/column?project_url=${projectUrl}`),
       dataType: 'json',
       success: (data) => {
-        ColumnService._cache[projectId] = data;
+        ColumnService._cache[projectUrl] = data;
         resolve(data);
       },
       error: reject,

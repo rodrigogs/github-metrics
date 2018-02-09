@@ -24,7 +24,7 @@ class ReportService {
     if (cached) return JSON.parse(cached);
 
     const summaries = await SummaryService.find({
-      'project.id': Number(query.project_id),
+      'project.url': query.project_url,
       issue: { $ne: null },
       board_moves: { $not: { $size: 0 } },
       'board_moves.when': {
