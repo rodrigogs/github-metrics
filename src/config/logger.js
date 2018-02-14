@@ -20,11 +20,13 @@ const logger = new winston.Logger({
     new DailyRotateFile({
       level: 'info',
       filename: path.join(logDirectory, 'out'),
-      datePattern: '.HH-mm.dd-MM-yyyy.log',
+      datePattern: 'dd-MM-yyyy.log',
+      prepend: true,
       handleExceptions: true,
       json: true,
       maxsize: 5242880, // 5MB
       maxFiles: 5,
+      maxDays: 10,
       colorize: false,
     }),
     new winston.transports.Console({
