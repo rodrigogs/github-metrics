@@ -19,7 +19,7 @@ const logger = new winston.Logger({
   transports: [
     new DailyRotateFile({
       level: 'info',
-      filename: path.join(logDirectory, 'out'),
+      filename: path.join(logDirectory, '.out'),
       datePattern: 'dd-MM-yyyy.log',
       prepend: true,
       handleExceptions: true,
