@@ -11,6 +11,7 @@ router.route('/')
   .get(ProjectController.find);
 
 router.route('/:id')
+  .get(ProjectController.findById)
   .put(ProjectController.update);
 
 module.exports = router;

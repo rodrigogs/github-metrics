@@ -32,7 +32,6 @@ const Dashboard = ((window, document, $, Promise, toastr, dragula, Chart, random
   let projects;
   let columns;
   let labels;
-  let report;
 
   /**
    *
@@ -72,7 +71,7 @@ const Dashboard = ((window, document, $, Promise, toastr, dragula, Chart, random
     projects.forEach((project) => {
       projectSelect.append($('<option>', {
         text: project.name,
-        value: project.url,
+        value: project.id,
       }));
     });
 
@@ -83,8 +82,8 @@ const Dashboard = ((window, document, $, Promise, toastr, dragula, Chart, random
    *
    */
   const getCurrentProject = () => {
-    const currentProjectUrl = projectSelect.find(':selected').val();
-    return projects.find(project => project.url === currentProjectUrl);
+    const currentProjectId = projectSelect.find(':selected').val();
+    return projects.find(project => String(project.id) === String(currentProjectId));
   };
 
   /**
@@ -151,7 +150,7 @@ const Dashboard = ((window, document, $, Promise, toastr, dragula, Chart, random
 
       await Promise.all(data.map(column => ColumnService.update(column.id, column)));
       await loadProjectColumns();
-      await loadReport();
+      await loadReports();
       toastr.info('Columns successfully saved!');
     } catch (err) {
       toastr.error('Error saving columns');
@@ -209,10 +208,11 @@ const Dashboard = ((window, document, $, Promise, toastr, dragula, Chart, random
   const loadProjectColumns = async (renewCache = true) => {
     disableControls();
 
-    const projectUrl = projectSelect.find(':selected').val();
+    const projectId = projectSelect.find(':selected').val();
+    const project = await ProjectService.findById(projectId);
 
     try {
-      const data = await ColumnService.listForProject(projectUrl, renewCache);
+      const data = await ColumnService.listForProject(project.url, renewCache);
       populateProjectColumns(data);
     } catch (err) {
       toastr.error('Error retrieving columns for project');
@@ -293,66 +293,68 @@ const Dashboard = ((window, document, $, Promise, toastr, dragula, Chart, random
   /**
    *
    */
-  const loadLeadTime = () => {
-    ReportService
-      .getLeadTimeData(report, getCurrentProject())
-      .then((data) => {
-        leadTimeChart.data = data;
-        leadTimeChart.update();
-      });
+  const loadLeadTime = async (query) => {
+    try {
+      leadTimeChart.data = await ReportService.leadtime(query);
+      leadTimeChart.update();
+    } catch (err) {
+      console.error('Error retrieving leadTime data', err);
+    }
   };
 
   /**
-   *
+   * @param {Object} query
+   * @return {Promise<void>}
    */
-  const loadCfd = () => {
-    ReportService
-      .getCfdData(report, getCurrentProject(), fromDate.val(), toDate.val())
-      .then((data) => {
-        cfdChart.data = data;
-        cfdChart.update();
-      });
+  const loadCfd = async (query) => {
+    try {
+      cfdChart.data = await ReportService.cfd(query);
+      cfdChart.update();
+    } catch (err) {
+      console.error('Error retrieving cfd data', err);
+    }
   };
 
   /**
-   *
+   * @param {Object} query
+   * @return {Promise<void>}
    */
-  const loadWip = () => {
-    ReportService
-      .getWipData(report, getCurrentProject(), fromDate.val(), toDate.val())
-      .then((data) => {
-        wipChart.data = data;
-        wipChart.update();
-      });
+  const loadWip = async (query) => {
+    try {
+      wipChart.data = await ReportService.wip(query);
+      wipChart.update();
+    } catch (err) {
+      console.error('Error retrieving wip data', err);
+    }
   };
 
   /**
-   *
+   * @param {Object} query
+   * @return {Promise<void>}
    */
-  const loadThroughput = () => {
-    ReportService
-      .getThroughputData(report, getCurrentProject(), fromDate.val(), toDate.val())
-      .then((data) => {
-        throughputChart.data = data;
-        throughputChart.update();
-      });
+  const loadThroughput = async (query) => {
+    try {
+      throughputChart.data = await ReportService.throughput(query);
+      throughputChart.update();
+    } catch (err) {
+      console.error('Error retrieving throughput data', err);
+    }
   };
 
   /**
-   * @param [renewCache=true]
    * @return {Promise.<void>}
    */
-  const loadReport = async (renewCache = true) => {
+  const loadReports = async () => {
     const query = reportForm.serialize();
     disableControls();
 
     try {
-      report = await ReportService.summary(query, renewCache);
-
-      loadCfd();
-      loadLeadTime();
-      loadWip();
-      loadThroughput();
+      await Promise.all([
+        loadCfd(query),
+        loadLeadTime(query),
+        loadWip(query),
+        loadThroughput(query),
+      ]);
     } catch (err) {
       console.error(err);
       toastr.error('An error has occurred');
@@ -366,7 +368,7 @@ const Dashboard = ((window, document, $, Promise, toastr, dragula, Chart, random
    */
   const initElements = () => {
     reportForm = $('form#report_form');
-    projectSelect = $('select#project_url');
+    projectSelect = $('select#project_id');
     columnsModalBtn = $('button#manage_columns');
     columnsModal = $('#column_manager');
     closeColumnsModalBtn = $('button#close_columns_modal');
@@ -393,18 +395,14 @@ const Dashboard = ((window, document, $, Promise, toastr, dragula, Chart, random
    */
   const initEventHandlers = () => {
     projectSelect.on('change', () => {
-      loadProjectColumns().then(loadReport).catch(console.error);
+      loadProjectColumns().then(loadReports).catch(console.error);
       populateLabels();
     });
-    fromDate.on('change', loadReport);
-    toDate.on('change', loadReport);
-    loadBtn.on('click', loadReport);
+    fromDate.on('change', loadReports);
+    toDate.on('change', loadReports);
+    loadBtn.on('click', loadReports);
     saveColumnsBtn.on('click', saveColumns);
     saveLabelsBtn.on('click', saveLabels);
-    cfdCard.on('click', loadCfd);
-    leadTimeCard.on('click', loadLeadTime);
-    wipCard.on('click', loadWip);
-    throughputCard.on('click', loadThroughput);
   };
 
   /**
@@ -522,7 +520,7 @@ const Dashboard = ((window, document, $, Promise, toastr, dragula, Chart, random
     initElements();
     initEventHandlers();
     initCharts();
-    loadProjects().then(loadLabels).then(loadReport);
+    loadProjects().then(loadLabels).then(loadReports);
   };
 
   return {

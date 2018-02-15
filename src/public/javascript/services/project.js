@@ -1,9 +1,40 @@
-const ProjectService = (($, App) => ({
+const ProjectService = (($, App, _) => ({
 
   /**
    *
    */
   _cache: [],
+
+  /**
+   * @param {Number} id
+   * @param [renewCache=false]
+   * @return Promise
+   */
+  findById: (id, renewCache = false) => new Promise((resolve, reject) => {
+    const cache = ProjectService._cache;
+    const hasCache = cache && cache.length;
+
+    if (hasCache && !renewCache) {
+      const item = cache.find((project) => {
+        return String(project.id) === String(id);
+      });
+
+      if (item) return resolve(item);
+    }
+
+    $.ajax({
+      method: 'GET',
+      url: App.getBaseUrl(`/api/v1/project/${id}`),
+      dataType: 'json',
+      success: (data) => {
+        cache = _.remove(cache, item => String(item.id) === String(id));
+
+        ProjectService._cache.push(data);
+        resolve(data);
+      },
+      error: reject,
+    });
+  }),
 
   /**
    * @param [renewCache=false]
@@ -41,4 +72,4 @@ const ProjectService = (($, App) => ({
     });
   }),
 
-}))(jQuery, App);
+}))(jQuery, App, _);

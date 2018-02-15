@@ -27,6 +27,23 @@ const ReportController = {
    * @param next
    * @return {Promise.<void>}
    */
+  findById: async (req, res, next) => {
+    debug('executing findById action');
+
+    try {
+      const project = await ProjectService.findOne({ id: Number(req.params.id) }).exec();
+      res.status(200).send(project);
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  /**
+   * @param req
+   * @param res
+   * @param next
+   * @return {Promise.<void>}
+   */
   update: async (req, res, next) => {
     debug('executing update action');
 
