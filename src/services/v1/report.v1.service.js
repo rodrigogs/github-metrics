@@ -84,6 +84,8 @@ class ReportService {
 
     return _(rawData)
       .map((summary) => {
+        let lastMove;
+
         _.each(summary.board_moves, (move) => {
           const date = moment.utc(move.when);
           move.date = date;
@@ -106,8 +108,15 @@ class ReportService {
           if (toColumn) {
             move.to_column = Object.assign({}, toColumn.toObject());
           }
+
+          if (((lastMove && lastMove.to_column) && move.to_column)
+            && (lastMove.to_column.order >= move.to_column.order)) move.__remove = true;
+
+          lastMove = move;
         });
-        summary.board_moves = _.filter(summary.board_moves, move => !!move.to_column);
+
+        summary.board_moves = _
+          .filter(summary.board_moves, move => !!move.to_column && !move.__remove);
 
         _.groupBy(summary.board_moves, 'dayOfYear');
 
@@ -137,12 +146,12 @@ class ReportService {
     const data = await ReportService.summaries({ project_url: project.url });
     const summaries = ReportService.normalizeData(data, project, columns);
 
-    let labels = [from, ..._(summaries)
+    let labels = _(summaries)
       .map('board_moves')
       .flatten()
       .sortBy('millis')
       .map('formatedDate')
-      .value(), to];
+      .value();
 
     labels = _.uniq(labels);
 
@@ -305,7 +314,7 @@ class ReportService {
     const fromDate = moment(from, 'DD/MM/YYYY');
     const toDate = moment(to, 'DD/MM/YYYY');
 
-    const labels = [fromDate.format('DD/MM/YYYY')];
+    const labels = [];
 
     let lastDate = fromDate;
     while (lastDate.isBefore(toDate)) {
