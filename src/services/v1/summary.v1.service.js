@@ -313,8 +313,6 @@ class SummaryService extends Summary {
    *
    */
   static async summarize() {
-    return; // FIXME remove
-
     if (summarizing) {
       return debug('already summarizing');
     }
