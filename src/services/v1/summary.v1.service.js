@@ -270,6 +270,7 @@ const _summarizeCardEvents = async (processedDeliveries) => {
     .find({ delivery: { $not: { $in: processedDeliveries } } }).exec();
 
   let cardsTodo = cardEvents.length;
+  logger.info(`${cardsTodo} card events will be processed`);
 
   return Promise.each(cardEvents, async (event, index) => {
     await _summarizeCardEvent(event);
@@ -277,7 +278,7 @@ const _summarizeCardEvents = async (processedDeliveries) => {
     runGCIfNeeded();
     cardsTodo -= 1;
 
-    debug(cardsTodo, 'card events to process');
+    debug(`${cardsTodo} card events to process`);
   });
 };
 
@@ -291,6 +292,7 @@ const _summarizeIssueEvents = async (processedDeliveries) => {
     .find({ delivery: { $not: { $in: processedDeliveries } } }).exec();
 
   let issuesTodo = issueEvents.length;
+  logger.info(`${issuesTodo} issue events will be processed`);
 
   return Promise.each(issueEvents, async (event, index) => {
     await _summarizeIssueEvent(event);
@@ -298,7 +300,7 @@ const _summarizeIssueEvents = async (processedDeliveries) => {
     runGCIfNeeded();
     issuesTodo -= 1;
 
-    debug(issuesTodo, 'issue events to process');
+    debug(`${issuesTodo} issue events to process`);
   });
 };
 
