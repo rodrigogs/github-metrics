@@ -12,6 +12,7 @@ const Label = require('../../models/v1/label.v1.model');
 const AuthService = require('../../services/auth.service');
 const logger = require('../../config/logger');
 const RedisProvider = require('../../providers/redis.provider');
+const CardService = require('../../services/v1/card.v1.service');
 
 /**
  * @param issue
@@ -36,7 +37,7 @@ const _findRootCauses = async (issue) => {
 const _findCustomStatuses = (issue) => {
   debug('looking for custom statuses for issue', issue.id);
 
-  if (!issue) return [];
+  if (!issue || !issue.title) return [];
   return (issue.title.match(/\[(.*?)]/g) || []).map((match) => {
     return match.replace('[', '').replace(']', '');
   });
@@ -105,11 +106,16 @@ const _buildCardSummary = async (cardEvent, summary = new Summary()) => {
   debug('building summary for card', cardEvent.project_card.id);
 
   summary.card = await Card.findOne({ id: cardEvent.project_card.id }).exec() || summary.card;
+  if (!summary.card) {
+    summary.card = await CardService.saveFromUrl(cardEvent.project_card.url);
+  }
+
   await _resolveColumnAndProject(summary, summary.card.column_url);
   summary.issue = await Issue.findOne({ url: summary.card.content_url }).exec() || summary.issue;
   if (summary.issue) {
     summary.issue.labels = await Promise.all(summary.issue.labels.map(label => _resolveReference(Label)('url', label.url)));
   }
+
   summary.changes = summary.changes || [];
   summary.board_moves = summary.board_moves || [];
   summary.deliveries = summary.deliveries || [];
@@ -128,7 +134,9 @@ const _buildIssueSummaryForCard = issueEvent => async (card) => {
   await _resolveColumnAndProject(summary, summary.card.column_url);
   if (!summary.issue) summary.issue = await Issue.findOne({ id: issueEvent.issue.id }).exec();
   if (summary.issue) {
-    summary.issue.labels = await Promise.all(summary.issue.labels.map(label => _resolveReference(Label)('url', label.url)));
+    summary.issue.labels = await Promise.all(summary.issue.labels
+      .filter(label => !!label)
+      .map(label => _resolveReference(Label)('url', label.url)));
   }
   if (!summary.changes) summary.changes = [];
   if (!summary.board_moves) summary.board_moves = [];
@@ -339,7 +347,7 @@ class SummaryService extends Summary {
 }
 
 // Schedule summarization to run every 5 minutes
-setInterval(async () => {
+setTimeout(async () => {
   try {
     const startDate = new Date();
     await SummaryService.summarize();
@@ -350,6 +358,6 @@ setInterval(async () => {
   } catch (err) {
     logger.error('Summarization failed', err);
   }
-}, 5 * (60 * 1000));
+}, 5);
 
 module.exports = SummaryService;

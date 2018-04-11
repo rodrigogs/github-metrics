@@ -37,7 +37,7 @@ const HealthcheckController = {
   index: (req, res) => {
     debug('executing index action');
 
-    res.status(200).send({ status: 'ok' });
+    res.status(200).send({ status: 'ok', version: pkg.version });
   },
 
   logs: async (req, res, next) => {

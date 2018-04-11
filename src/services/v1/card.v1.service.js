@@ -28,6 +28,13 @@ class CardService extends Card {
   }
 
   /**
+   * @param query
+   */
+  static findEvents(query = {}) {
+    return CardEvent.find(query).exec();
+  }
+
+  /**
    * @param card
    * @return {Promise<Card>}
    */
